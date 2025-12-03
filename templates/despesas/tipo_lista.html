@@ -1,0 +1,41 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  Lista de Tipos de Despesas
+{% endblock %}
+ 
+{% block content %}
+ 
+<div id="conteudo-projetos">
+  <div class="cabecalho-projetos">
+    <h2>&#128214 Lista de Tipos de Despesas</h2>
+    <div class="filtros-container">
+      <a href="{{ url_for('despesas.despesa_novo_tipo') }}" class="submenu-link">&#10133 Novo Tipo de Despesa</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <table border="1" cellpadding="5" cellspacing="0" id="tabelaPropostas">
+    <thead>
+      <tr>
+        <th cursor: style="cursor: pointer;" style="text-align: center; width: 40px;">ID</th> 
+        <th style="text-align: center;">Descrição <span></span></th>        
+        <th style="text-align: center;">Observação<span></span></th>
+        </tr>
+    </thead>
+    <tbody>  
+      {% for tipo in tipos %} 
+        <tr>
+          <td onclick="abrirFormularioEdicaoTipoDespesa({{ tipo.id }})" style="cursor: pointer; color: blue; ">
+                    {{ tipo.id }}
+                </td>
+          <td data-label="nome" class="Escopo">{{ tipo.nome }}</td>
+          <td data-label="Observação" class="Escopo">{{ tipo.observacao }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

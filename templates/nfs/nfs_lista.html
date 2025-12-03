@@ -1,0 +1,103 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    Lista de Notas Fiscais
+{% endblock %}
+ 
+{% block content %}
+<div id="conteudo-projetos">
+    <div class="cabecalho-projetos"> 
+        <h2>&#128214 Lista de Notas Fiscais</h2>
+
+        <div class="filtros-container">
+            <form method="get" action="{{ url_for('nfs.listar_nfs') }}" style="max-width: 200px; ">
+                <label for="cliente_id">&#128270 Cliente:</label>
+                <select name="cliente_id" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}" {% if cliente_id and cliente.id == cliente_id|int %}selected{% endif %}>
+                            {{ cliente.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+
+    <table border="1" cellpadding="5" cellspacing="0" id="tabelaNfs"> 
+        <thead>
+            <tr>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(0, this)">Status <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(1, this)">Nº NF<span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(2, this)">Emissão<span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(3, this)">Cliente <span></span></th>
+                <th style="cursor: pointer; text-align: center; display: none;" onclick="ordenarTabelaNf(4, this)">ID <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(5, this)">Bruto (R$) <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(6, this)">Líquido (R$) <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(7, this)">Método <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(8, this)">Nº Boleto<span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(9, this)">Banco <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(10, this)">Vencimento<span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(11, this)">Recebimento<span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaNf(12, this)">Contrato<span></span></th>                
+            </tr>
+        </thead>
+        <tbody>
+            {% for nf in nfs %} 
+            <tr>
+                <td style="text-align: center; cursor: default;" data-label="Status" >
+                  {% if nf.data_pagamento != none %}
+                    <span style="color: rgb(19, 189, 104); font-size: 14px; cursor: default;">&#9679;</span>
+                    <span style="display: none;">Pago</span>
+
+                  {% elif nf.data_vencimento < today and nf.data_pagamento is none %}
+                    <span style="color: red; font-size: 14px; cursor: default;">&#9679;</span>
+                    <span style="display: none;">No Prazo</span>
+
+                  {% elif nf.data_vencimento >= today and nf.data_pagamento is none %}
+                    <span style="color: blue; font-size: 14px; cursor: default;">&#9679;</span>
+                    <span style="display: none;">No Prazo</span>
+                  {% endif %}
+                </td>
+                <!-- <td style="text-align: center;" data-label="Status">{{ nf.status_pagamento }}</td> -->
+                <td style="text-align: center; cursor: pointer; color: blue;" data-label="numero_nf" onclick="abrirFormularioEdicaoNf({{ nf.id }})">{{ nf.numero_nf }}</td>
+                <td style="text-align: center;" data-label="Data">{{ nf.data_emissao.strftime("%d/%m/%y") }}</td>
+                <td style="text-align: center;" data-label="Cliente">{{ nf.cliente.nome }}</td>
+                <td style="text-align: center;" data-label="Bruto">{{ "%.2f"|format(nf.valor_bruto) }}</td>
+                <td style="text-align: center;" data-label="Liquido">{{ "%.2f"|format(nf.valor_liquido) }}</td>
+                <td style="text-align: center;" data-label="Metodo">{{ nf.forma_de_pagamento }}</td>
+
+                <td style="text-align: center;" data-label="Pagamento">
+                  {% if nf.forma_de_pagamento == 'Boleto' %}
+                    {{ nf.boleto }} 
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+
+                <td style="text-align: center;" data-label="Boleto">{{ nf.banco.nome }}</td>
+                <td style="text-align: center;" data-label="Vencimento">{{ nf.data_vencimento.strftime("%d/%m/%y") }}</td>
+                
+                {% if nf.data_pagamento is none %}
+                  <td style="cursor: pointer; text-align: center;" data-label="data_pagamento" title="Confirme o recebimento da NF." onclick="confirmarRecebimentoNf({{ nf.id }})">&#128197</td>
+                {% else %} 
+                  <td style="cursor: pointer; text-align: center;" data-label="data_pagamento" title="Cancele o recebimento da NF." onclick="cancelarRecebimentoNf({{ nf.id }})">{{ nf.data_pagamento.strftime("%d/%m/%y") }}</td> 
+                {% endif %}
+                
+                <td style="text-align: center;" data-label="Contrato">{{ nf.contrato.numero_contrato }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div style="text-align: left; padding-top: 10px;">
+        <span style="color: black; font-size: 14px;">Legenda: </span>
+        <span style="color: red; font-size: 14px;">&#9679; Atrasado </span> 
+        <span style="color: rgb(19, 189, 104); font-size: 14px;">&#9679; Pago</span>
+        <span style="color: blue; font-size: 14px;">&#9679; No Prazo<span>
+        <span style="color: black; font-size: 14px;">&#9679; Cancelado</span>
+    </div>
+</div>
+
+{% endblock %}

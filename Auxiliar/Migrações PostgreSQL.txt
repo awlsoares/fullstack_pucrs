@@ -1,0 +1,27 @@
+O Flask + SQLAlchemy normalmente usa a ferramenta Alembic para controlar 
+migrações do banco de dados, ou seja, sincronizar as mudanças da classe com o PostgreSQL.
+
+Exemplo de fluxo usando Alembic:
+
+Você adiciona ou remove um campo no models.py.
+
+Roda:
+flask db migrate -m "Adiciona campo idade à tabela pessoa"
+
+Depois:
+flask db upgrade
+
+Isso cria e aplica a migração, modificando o PostgreSQL com segurança.
+
+pip install Flask-Migrate
+
+python manage.py db init
+python manage.py db migrate -m "Adiciona campo idade"
+python manage.py db upgrade
+
+Obs: 
+Opção 1 – Alinhar o banco com as migrações existentes
+Se as tabelas já estão criadas no banco e refletem exatamente os modelos atuais, 
+basta "avisar" ao Alembic que o banco já está atualizado:
+
+flask db stamp head

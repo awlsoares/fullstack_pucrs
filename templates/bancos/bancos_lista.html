@@ -1,0 +1,50 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    Lista de Bancos
+{% endblock %}
+ 
+{% block content %}
+<div id="conteudo-projetos">
+    <div class="cabecalho-projetos">
+        <h2>&#128214 Lista de Bancos</h2>
+        <a href="{{ url_for('bancos.novo_banco') }}" class="submenu-link">&#10133 Novo Banco</a>
+    </div>
+
+    <hr>
+
+    <table border="1" cellpadding="5" cellspacing="0" id="tabelaClientes">
+        <thead>
+            <tr>
+                <th cursor: style="cursor: pointer;" style="text-align: center; width: 40px;">ID</th>
+                <th cursor: style="cursor: pointer;" style="text-align: center;">Banco</th>
+                <th cursor: style="cursor: pointer;" style="text-align: center;">Conta</th>
+                <th cursor: style="cursor: pointer;" style="text-align: center;">Observações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for banco in bancos %}
+            <tr>
+                <td onclick="abrirFormularioEdicaoBanco({{ banco.id }})" style="cursor: pointer; color: blue; ">
+                    {{ banco.id }}
+                </td>
+                <td data-label="nome">{{ banco.nome }}</td>
+                <td data-label="numero_conta">{{ banco.numero_conta }}</td>
+                <td data-label="observacao">{{ banco.observacao }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- <div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</div> -->
+{% endblock %} 

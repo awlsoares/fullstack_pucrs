@@ -1,0 +1,137 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  {{ 'Editar Banco' if banco else 'Cadastrar Banco' }}
+{% endblock %}
+
+{% block content %}
+<div id="conteudo-bancos">
+  <h2>{{ '✍ Editar Banco' | safe  if banco else '&#10133; Adicionar Banco' | safe }}</h2> 
+
+  <hr>
+
+  <form method="post" id="form-cadastro-banco" onsubmit="return validarFormulario();">
+    {% if banco %}
+      <input type="hidden" id="banco_id" name="banco_id" value="{{ banco.id }}">
+    {% endif %}
+    <div class="form-group">
+      <label for="nome">Banco: <span class="erro">*</span></label>
+      <input type="text" id="nome" name="nome" value="{{ banco.nome if banco else '' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="observacao">Conta nº: *</label>
+      <input type="text" id="numero_conta" name="numero_conta" value="{{ banco.numero_conta if banco else '' }}" required>
+    </div>
+
+    <!-- <div class="form-group">
+        <label for="saldo">Saldo (R$): <span class="erro">*</span></label>
+        <input type="number" step="0.01" id="saldo" name="saldo" value="{{ banco.saldo if banco else '' }}"required>
+    </div> -->
+
+    <div class="form-group">
+      <label for="observacao">Observação: *</label>
+      <input type="text" id="observacao" name="observacao" value="{{ banco.observacao if banco else '' }}" required>
+    </div>
+
+    <div class="form-group botoes">
+      <input type="submit" value="Salvar" class="btn-salvar">
+      <a href="{{ url_for('bancos.listar_bancos') }}" class="btn-cancelar">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  /* Mantém os estilos anteriores */
+  #conteudo-bancos {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  .botoes {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  .btn-salvar {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-cancelar {
+    background-color: #6c757d;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+</style>
+
+<script>
+  function validarFormulario() {
+    const nome = document.getElementById('nome');
+    const numero_conta = document.getElementById('numero_conta');
+    const observacao = document.getElementById('observacao');
+
+    if (!nome.value.trim()) {
+      alert('O campo Nome é obrigatório.');
+      return false;
+    }
+    if (!numero_conta.value.trim()) {
+      alert('O campo Conta Nº é obrigatório.');
+      return false;
+    }
+    if (!observacao.value.trim()) {
+      alert('O campo Observação é obrigatório.');
+      return false;
+    }
+    return true;
+  }
+</script>
+{% endblock %}

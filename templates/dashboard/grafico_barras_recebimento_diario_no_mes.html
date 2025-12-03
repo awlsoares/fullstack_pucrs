@@ -1,0 +1,229 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  Gráfico de Recebimento Diário - {{ mes }}/{{ ano }}
+{% endblock %}
+
+{% block content %}
+<div id="conteudo-projetos">
+
+  <div class="cabecalho-projetos">
+    <h2>&#128202; Gráfico de Recebimento Diário - {{ mes }}/{{ ano }}</h2>
+
+    <div class="filtros-container">
+      <div>
+          <button onclick="printScreen()" 
+                  style="background-color:#003366; color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer;">
+            🖨️ Imprimir
+          </button>
+      </div>
+      <a href="{{ url_for('dashboard_recebimento.dashboard_grafico_recebimento') }}" class="btn-retornar">&#11013 Retornar</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <div name="tela">
+
+    <div style="display: flex; justify-content: center;">
+      <canvas id="myChart" style="width:100%; max-width:900px;"></canvas>
+    </div>
+
+    <div name="listagem">
+        <h2>Lista de Recebimentos </h2>
+        <!-- Inclui o conteúdo de outro arquivo HTML -->
+        {% include "recebimento/recebimento_tipo.html" %}
+    </div>
+
+  </div>
+
+  <style>
+    .btn-retornar {
+      display: inline-block;
+      background-color: #f5f5f5;
+      color: #333;
+      text-decoration: none;   /* remove o sublinhado */
+      font-weight: bold;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      transition: all 0.3s ease;
+    }
+
+    .btn-retornar:hover {
+      background-color: #007bff;
+      color: #fff;
+      border-color: #007bff;
+      text-decoration: none;   /* garante que não volte o sublinhado */
+    }
+
+    @media print {
+      tr {
+        page-break-inside: avoid; /* evita cortar linhas */
+      }
+      table {
+        page-break-after: auto;
+      }
+    }
+
+    table {
+        width: 100%;
+        max-height: 800px; /* Limita a altura do gráfico */
+        border-collapse: separate; /* Permite bordas arredondadas */
+        border-spacing: 5px; /* Remove espaço entre células */
+        margin: 15px 0;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        border-radius: 10px; /* Bordas arredondadas */
+    }
+
+    th, td {
+        border: 1px solid #ddd; /* Define a borda */
+        padding: 5px;
+        text-align: center;
+        border-radius: 5px; /* Bordas arredondadas */
+    }
+
+    th {
+        background-color: #f4f4f4;
+        font-weight: bold;
+        color: #003366; /* Azul escuro para legendas */
+    }
+
+    td:first-child {
+        text-align: left;
+        font-weight: bold;
+        color: #003366;
+    }
+
+  </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const xValues = {{ labels | tojson }};
+      const total_diario = {{ recebido | tojson }};  // total do dia = assinatura + protocolo + conclusao
+
+      const ctx = document.getElementById("myChart").getContext("2d");
+
+      const chartConfig = {
+        type: "bar",
+        data: {
+          labels: xValues,
+          datasets: [
+            {
+              label: "Total Diário (R$)",
+              data: total_diario,
+              backgroundColor: "rgba(0, 51, 102, 0.7)",    // Azul Petrobras
+              borderColor: "rgba(0, 51, 102, 1)",          // Azul Petrobras
+              borderWidth: 2,                              // Borda mais visível
+              borderRadius: 4,                             // Bordas arredondadas
+              borderSkipped: false                         // Aplica borda em todos os lados
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "R$"
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: "Dias do mês"
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',     // Inferior como você pediu
+              align: 'end',          // Direita como você pediu
+              labels: {
+                color: '#003366',    // Cor consistente com o tema
+                font: {
+                  size: 12
+                },
+                padding: 15
+              }
+            },
+            title: {
+              display: true,
+              text: "Recebimento Diário - {{ '%02d'|format(mes) }} / {{ ano }}",
+              font: {
+                  size: 18,
+                  weight: 'bold',
+                  family: 'Arial, sans-serif'  // Arial como primeira opção, sans-serif como fallback
+                },
+                color: '#003366',
+                padding: 15
+            }
+          }
+        }
+      };
+      // Cria o gráfico e salva os dados no canvas para impressão 
+      const myChart = new Chart(ctx, chartConfig);
+      document.getElementById("myChart").dataset.chartData = JSON.stringify(chartConfig);
+    });
+
+    // Função para imprimir a div "tela" mantendo gráfico e tabelas
+  function printScreen() {
+    var tela = document.getElementsByName("tela")[0];
+    var printWindow = window.open('', '', 'height=800,width=1000');
+
+    printWindow.document.write('<html><head><title>Recebimento - {{ mes}}-{{ ano }}</title>');
+    printWindow.document.write('<style>');
+    printWindow.document.write('body { font-family: Arial, sans-serif; margin: 20px; }');
+    printWindow.document.write('table {width: 100%; border-collapse: separate; border-spacing: 5px; margin:15px 0; font-size:14px; font-family:Arial,sans-serif; border-radius:10px;}');
+    printWindow.document.write('th, td {border:1px solid #ddd; padding:5px; text-align:center; border-radius:5px;}');
+    printWindow.document.write('th {background-color:#f4f4f4; font-weight:bold; color:#003366;}');
+    printWindow.document.write('td:first-child {text-align:left; font-weight:bold; color:#003366;}');
+    printWindow.document.write('</style></head><body>');
+
+    // Clona o conteúdo da div
+    var cloneDiv = tela.cloneNode(true);
+
+    // Remove o canvas antigo
+    var originalCanvas = cloneDiv.querySelector('canvas');
+    if (originalCanvas) {
+      originalCanvas.remove();
+    }
+
+    // Cria o novo canvas e centraliza dentro do mesmo container do original
+    var canvasClone = document.createElement('canvas');
+    canvasClone.id = 'myChartPrint';
+    canvasClone.style.width = '100%';
+    canvasClone.style.maxWidth = '600px';
+    canvasClone.style.display = 'block';
+    canvasClone.style.margin = '0 auto';
+
+    var canvasContainer = cloneDiv.querySelector('div[style*="display: flex"]');
+    if (canvasContainer) {
+      canvasContainer.appendChild(canvasClone);
+    }
+
+    // Adiciona a div clonada no body da janela de impressão
+    printWindow.document.body.appendChild(cloneDiv);
+
+    // Recria o gráfico na nova janela
+    var ctx = canvasClone.getContext('2d');
+    var data = JSON.parse(document.getElementById("myChart").dataset.chartData);
+    new Chart(ctx, data);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(function() {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  }
+    
+  </script>
+
+</div>
+{% endblock %}

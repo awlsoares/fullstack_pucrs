@@ -1,0 +1,11 @@
+<div name="tela" style="display: flexbox;">
+    <!-- <div style="width: 300px; height: 380px; background-color: #dcf1ee; border-radius: 10px; overflow: auto;">
+        {% include "index/nfs_por_ano.html" %}
+    </div> -->
+
+    <!-- <div style="width: 700px; height: 500px; background-color: #dcf1ee; border-radius: 10px; overflow: auto;">
+        {% include "index/nfs_filtradas.html" %}
+    </div> -->
+
+
+</div>

@@ -1,0 +1,24 @@
+<table border="1" cellpadding="5" cellspacing="0" id="tabelaFaturamentos">
+    <thead>
+        <tr>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaFaturamento(0, this)">Cliente</th> 
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaFaturamento(1, this)">Contrato</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaFaturamento(2, this)">Escopo</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaFaturamento(3, this)">Data</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaFaturamento(4, this)">R$</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaFaturamento(5, this)">Tipo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for faturamento in faturamentos %}
+            <tr>
+                <td style="text-align: center;" data-label="Cliente">{{ faturamento.cliente }}</td>
+                <td style="text-align: center;" data-label="numero_projeto">{{ faturamento.contrato }}</td>
+                <td data-label="Descrição" class="descricao">{{ faturamento.escopo }}</td> 
+                <td style="text-align: center;" data-label="Data">{{ faturamento.data.strftime("%d/%m/%y") }}</td> 
+                <td style="text-align: center;">{{ "%.2f"|format(faturamento.valor) }}</td>   
+                <td style="text-align: center;">{{ faturamento.tipo }}</td>            
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

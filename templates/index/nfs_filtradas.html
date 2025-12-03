@@ -1,0 +1,128 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtro de Notas Fiscais</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .filtros-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        select:hover {
+            border-color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <h2>Gráfico de Notas Fiscais por Mês e Ano</h2>
+    
+    <!-- Filtros -->
+    <div class="filtros-container">
+        <select id="selectAno" onchange="atualizarGrafico()">
+            <option value="">Todos os anos</option> <!-- Default -->
+        </select>
+        <select id="selectMes" onchange="atualizarGrafico()">
+            <option value="">Todos os meses</option> <!-- Default -->
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5">Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+        </select>
+    </div>
+    
+    <!-- Gráfico -->
+    <canvas id="graficoNotas" width="800" height="400"></canvas>
+
+    <script>
+        let chartInstance;
+
+        // Carregar os anos disponíveis dinamicamente
+        async function carregarAnos() {
+            const response = await fetch('/api/anos_disponiveis');
+            const anos = await response.json();
+
+            const selectAno = document.getElementById('selectAno');
+            anos.forEach(ano => {
+                const option = document.createElement('option');
+                option.value = ano;
+                option.textContent = ano;
+                selectAno.appendChild(option);
+            });
+        }
+
+        // Atualizar o gráfico com os filtros
+        async function atualizarGrafico() {
+            const ano = document.getElementById('selectAno').value || null; // Filtro de ano
+            const mes = document.getElementById('selectMes').value || null; // Filtro de mês
+            
+            const response = await fetch(`/api/notas_por_mes_ano?ano=${ano}&mes=${mes}`);
+            const data = await response.json();
+
+            // Processa os dados para o gráfico
+            const meses = data.map(d => d.mes || 'Todos');
+            const quantidades = data.map(d => d.quantidade);
+
+            // Atualiza o gráfico
+            gerarGrafico(meses, quantidades);
+        }
+
+        // Função para gerar o gráfico
+        function gerarGrafico(labels, data) {
+            const ctx = document.getElementById('graficoNotas').getContext('2d');
+            
+            // Destrói o gráfico anterior, se existir
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Cria novo gráfico
+            chartInstance = new Chart(ctx, {
+                type: 'bar', // Tipo do gráfico
+                data: {
+                    labels: labels, // Meses ou anos
+                    datasets: [{
+                        label: 'Notas Fiscais Emitidas',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inicializa os anos e gera o gráfico inicial
+        carregarAnos();
+        atualizarGrafico();
+    </script>
+</body>

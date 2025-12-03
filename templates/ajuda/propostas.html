@@ -1,0 +1,154 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    Ajuda - Propostas
+{% endblock %}
+
+{% block content %} 
+    <div class="botoes-topo">
+        <a href="{{ url_for('propostas.listar_propostas') }}" class="btn-voltar">⟵ Voltar</a>
+        <a href="{{ url_for('ajuda.propostas') }}" class="btn-ajuda">ℹ️ Ajuda</a>
+    </div>
+
+    <h1 style="font-size: 18px; margin-bottom: 20px;">Ajuda - Propostas</h1>
+
+    <!-- Índice -->
+    <nav class="indice-ajuda">
+        <ul>
+            <li><a href="#criacao-proposta">Criação de uma Proposta</a></li>
+            <li><a href="#alteracao-status">Alteração de Status da Proposta</a></li>
+            <li><a href="#cancelamento-proposta">Cancelamento de uma Proposta</a></li>
+            <li><a href="#criacao-contrato">Criação de um Contrato</a></li>
+        </ul>
+    </nav>
+
+    <!-- Seções -->
+    <section id="criacao-proposta">
+        <h2>Criação de uma Proposta</h2>
+        <ul class="lista-regras">
+            <li>Para criar uma nova proposta, clique em <strong>"➕ Nova Proposta"</strong> no menu.</li>
+            <li>Preencha os campos obrigatórios, como cliente, valor e descrição.</li>
+            <li>Após salvar, a proposta ficará com o status inicial <strong>"Aguardando Aprovação"</strong>.</li>
+        </ul>
+    </section>
+
+    <section id="alteracao-status">
+        <h2>Alteração de Status da Proposta</h2>
+        <ul class="lista-regras">
+            <li>Proposta <strong>"Aguardando Aprovação"</strong>: é permitido mudar o status.</li>
+            <li>Proposta <strong>"Aprovada"</strong>: não é permitido mudar o status caso exista um contrato associado.</li>
+            <li>Proposta <strong>"Reprovada"</strong>: é permitido mudar o status.</li>
+            <li>Quando você altera o status da Proposta para <strong>"Aprovada"</strong>, surgirá o botão ➕ na coluna 
+                <strong>"Contrato"</strong>. Se você clicar em ➕ o sistema abrirá uma tela para cadastro de um novo Contrato. <br>
+                Para propostas cadastradas como <strong>Múltiplos Contratos</strong> o botão ➕ sempre estará disponível enquanto a Proposta estiver ativa.<br>
+                Para propostas de contratos únicos, quando você cadastrar o novo Contrato o botão ➕ ficará oculto.
+            </li>
+        </ul>
+    </section>
+    
+    <section id="cancelamento-proposta">
+        <h2>Cancelamento de uma Proposta</h2>
+        <ul class="lista-regras">
+            <li>Só é permitido cancelar uma proposta se a mesma estiver com o status <strong>Aguardando Aprovação</strong> ou com o status <strong>Aprovada</strong> (desde que não tenha um contrato associado).</li>
+            <li>Para cancelar a proposta clique no ícone de <strong>Status (<span style="color: orange;"> ● </span> / <span style="color: green;"> ● </span>)</strong> e selecione a opção <strong>Cancelar</strong>.</li>
+            <li>A operação de cancelamento de uma proposta não poderá ser desfeita.</li>
+            <li><strong>Observação:</strong> o número de uma proposta cancelada fica indisponível no sistema.</li>
+        </ul>
+    </section>
+
+    <section id="criacao-contrato">
+        <h2>Criação de um Contrato</h2>
+        <ul class="lista-regras">
+            <li>Um contrato só pode ser criado a partir de uma <strong>proposta aprovada</strong>.</li>
+            <li>No menu da proposta, clique em <strong>"Criar Contrato"</strong>.</li>
+            <li>Preencha os dados necessários e confirme para vincular o contrato à proposta.</li>
+        </ul>
+    </section>
+
+    <style>
+        .botoes-topo {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-voltar,
+        .btn-ajuda {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-voltar {
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            color: #333;
+        }
+
+        .btn-voltar:hover {
+            background-color: #e6e6e6;
+        }
+
+        .btn-ajuda {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+        }
+
+        .btn-ajuda:hover {
+            background-color: #0056b3;
+        }
+
+        .indice-ajuda {
+            margin-bottom: 20px;
+        }
+
+        .indice-ajuda ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .indice-ajuda li {
+            margin-bottom: 8px;
+        }
+
+        .indice-ajuda a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .indice-ajuda a:hover {
+            text-decoration: underline;
+        }
+
+        .lista-regras {
+            list-style: none;
+            padding-left: 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .lista-regras li {
+            margin-bottom: 12px;
+            padding-left: 28px;
+            position: relative;
+        }
+
+        .lista-regras li::before {
+            content: "✔";
+            position: absolute;
+            left: 0;
+            color: green;
+            font-weight: bold;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+
+{% endblock %}

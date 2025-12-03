@@ -1,0 +1,345 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  Lista de Contratos
+{% endblock %}
+ 
+{% block content %}
+<div id="conteudo-projetos">
+      <div class="cabecalho-projetos">
+        <h2>&#128214 Lista de Contratos - Faturamento</h2>
+
+        <div class="filtros-container">
+          <form method="get" action="{{ url_for('contratos.listar_contratos') }}" style="max-width: 200px; ">
+              <label for="cliente_id">&#128270 Cliente:</label>
+              <select name="cliente_id" onchange="this.form.submit()">
+                  <option value="">Todos</option>
+                  {% for cliente in clientes %}
+                      <option value="{{ cliente.id }}" {% if cliente_id and cliente.id == cliente_id|int %}selected{% endif %}>
+                          {{ cliente.nome }}
+                      </option>
+                  {% endfor %}
+              </select>
+          </form>
+
+          <div style="max-width: 200px; margin: 0 auto;">
+              <label for="filtroDescricao">&#128270 Descrição:</label>
+              <input type="text" id="filtroDescricao" placeholder="Digite parte do escopo..." onkeyup="filtrarContratos()"> 
+          </div>
+
+          <!-- <a href="{{ url_for('contratos.novo_contrato') }}" class="submenu-link">&#10133 Novo Contrato</a> -->
+        </div>
+    </div>
+
+    <hr>
+
+    <table border="1" cellpadding="5" cellspacing="0" id="tabelaContratos">
+        <thead>
+            <tr>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(0, this)">✔ <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(1, this)">Cliente <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(2, this)">Assinatura<span></span></th>
+                <th style="cursor: pointer; text-align: center; display: none;" onclick="ordenarTabela(3, this)">ID <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(4, this)">Escopo <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(5, this)">Assinatura (R$) <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(6, this)">Fatura</th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(7, this)">Protocolo (R$) <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(8, this)">Fatura</th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(9, this)">Conclusão (R$) <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(10, this)">Fatura</th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(11, this)">Total (R$) <span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(12, this)">Proposta<span></span></th>
+                <th style="cursor: pointer; text-align: center;" onclick="ordenarTabela(13, this)">Contrato<span></span></th>
+                <th style="text-align: center;">Ação<span></span></th>
+                <!-- <th style="text-align: center;">NF<span></span></th> -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for contrato in contratos %}
+            <tr>
+                <!-- <td style="text-align: center;" data-label="Status" onclick="abrirModal({{ contrato.id }})"> --> 
+              <td style="text-align: center;" title="Satus do contrato." data-label="Status" onclick="abrirModal({{ contrato.id }})">
+                 {% if contrato.status_contrato == "Parado" %}    
+                    <span style="color: red; font-size: 14px;">🛑 </span>
+                    <span style="display: none;">Parado</span>
+                  {% elif contrato.status_contrato == "Em Andamento" %}
+                    <span style="color: rgb(19, 189, 104); font-size: 14px;">&#128340;</span>
+                    <span style="display: none;">Em Andamento</span>
+                  {% elif contrato.status_contrato == "Finalizado" %}
+                    <span style="color: blue; font-size: 14px;">✔</span>
+                    <span style="display: none;">Finalizado</span>
+                  {% elif contrato.status_contrato == "Cancelado" %}
+                    <span style="color: black; font-size: 14px;">✘</span>
+                    <span style="display: none;">Cancelado</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: center;" data-label="Cliente">{{ contrato.cliente.nome }}</td>
+                <td style="text-align: center;" data-label="Data">{{ contrato.data_assinatura.strftime("%d/%m/%y") }}</td>
+
+                <td data-label="ID" onclick="abrirFormularioEdicaoContrato({{ contrato.id }})" style="cursor: pointer; color: blue; text-align: center; display: none">
+                    {{ contrato.id }}
+                </td>
+                <td data-label="Escopo" class="escopo">{{ contrato.escopo }}</td>
+
+                {% if contrato.valor_assinatura != 0.0 %}
+                  <td style="text-align: center;" data-label="Assinatura (R$)" class="status {{ 'status-true' if contrato.status_assinatura else 'status-false' }}"
+                      onclick="confirmarFaturamento({{ contrato.id }}, 'assinatura')">{{ "%.2f"|format(contrato.valor_assinatura) }}</td>
+                {% else %}
+                  <td style="text-align: center; cursor: default; background-color: rgb(19, 189, 104);" data-label="Assinatura (R$)" class="status {{ 'status-true' if contrato.status_assinatura else 'status-false' }}"
+                    >{{ "%.2f"|format(contrato.valor_assinatura) }}</td>
+                {% endif %}
+        
+                {% if contrato.status_assinatura == true %}
+                  <td style="text-align: center;">{{ contrato.data_faturamento_assinatura.strftime("%d/%m/%y") }}</td>
+                {% else %}
+                  <td style="text-align: center;">---</td>
+                {% endif %}
+
+                {% if contrato.valor_protocolo != 0.0 %}
+                  <td style="text-align: center;" data-label="Protocolo (R$)" class="status {{ 'status-true' if contrato.status_protocolo else 'status-false' }}"
+                      onclick="confirmarFaturamento({{ contrato.id }}, 'protocolo')">{{ "%.2f"|format(contrato.valor_protocolo) }}
+                  </td>
+                {% else %}
+                  <td style="text-align: center; cursor: default; background-color: rgb(19, 189, 104);" data-label="Protocolo (R$)" class="status {{ 'status-true' if contrato.status_protocolo else 'status-false' }}"
+                    >{{ "%.2f"|format(contrato.valor_protocolo) }}</td>
+                {% endif %}
+                  
+
+                {% if contrato.status_protocolo == true %}
+                  <td style="text-align: center;">{{ contrato.data_faturamento_protocolo.strftime("%d/%m/%y") }}</td>
+                {% else %}
+                  <td style="text-align: center;">---</td>
+                {% endif %} 
+
+                {% if contrato.valor_conclusao != 0.0 %}
+                  <td style="text-align: center;" data-label="Conclusão (R$)" class="status {{ 'status-true' if contrato.status_conclusao else 'status-false' }}"
+                      onclick="confirmarFaturamento({{ contrato.id }}, 'conclusao')">{{ "%.2f"|format(contrato.valor_conclusao) }}</td>
+                {% else %}
+                  <td style="text-align: center; cursor: default; background-color: rgb(19, 189, 104);" data-label="Conclusão (R$)" class="status {{ 'status-true' if contrato.status_conclusao else 'status-false' }}"
+                    >{{ "%.2f"|format(contrato.valor_conclusao) }}</td>
+                {% endif %}
+
+                {% if contrato.status_conclusao == true %}
+                  <td style="text-align: center;">{{ contrato.data_faturamento_conclusao.strftime("%d/%m/%y") }}</td> 
+                {% else %}
+                  <td style="text-align: center;">---</td>
+                {% endif %}
+
+                <td style="text-align: center;" data-label="Total (R$)">{{ "%.2f"|format(contrato.valor_assinatura + contrato.valor_protocolo + contrato.valor_conclusao) }}</td>
+
+                <td style="text-align: center;">{{ contrato.proposta.numero_proposta }}</td>
+                <td style="text-align: center; cursor: pointer; color: blue;" data-label="numero_contrato" onclick="abrirFormularioEdicaoContrato({{ contrato.id }})">{{ contrato.numero_contrato }}</td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-danger" title="Excluir contrato." onclick="abrirModalExcluirContrato({{ contrato.id }})">🗑</button>
+                </td>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div style="display: flex; justify-content: space-between;">
+      <div style="text-align: left; padding-top: 10px;">
+          <span style="color: black; font-size: 14px;">Status: </span>
+          <span style="color: red; font-size: 14px;">🛑 Parado </span> 
+          <span style="color: rgb(19, 189, 104); font-size: 14px;">&#128340; Em Andamento</span>
+          <span style="color: blue; font-size: 14px;">✔ Concluído</span>
+          <span style="color: black; font-size: 14px;">✘ Cancelado</span>
+      </div>
+      <div style="text-align: right; padding-top: 10px;">
+          <span style="color: black; font-size: 14px;">R$: </span>
+          <span style="color: red; font-size: 14px;">🛑 Não Faturado </span>
+          <span style="color: rgb(19, 189, 104); font-size: 14px;">🟢 Faturado </span> 
+      </div>
+    </div>
+</div>
+
+<!-- Modal para seleção de status -->
+<div id="statusModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="fecharModal()">&times;</span>
+    <h3>Selecione o novo status:</h3>
+    <br>
+    <form id="statusForm"> 
+        <label style="color: red;">
+            <input type="radio" name="status" value="Parado">
+            <span style="color: red; margin-right: 5px;">🛑</span> Parado
+        </label><br>
+        
+        <label style="color: rgb(19, 189, 104);">
+            <input type="radio" name="status" value="Em Andamento">
+            <span style="color: rgb(19, 189, 104); margin-right: 5px;">&#128340; </span> Em Andamento
+        </label><br>
+        
+        <label style="color: blue;">
+            <input type="radio" name="status" value="Finalizado">
+            <span style="color: blue; margin-right: 5px;">✔</span> Concluído
+        </label><br>
+        
+        <label style="color: black;">
+            <input type="radio" name="status" value="Cancelado">
+            <span style="color: black; margin-right: 5px;">✘</span> Cancelado
+        </label><br><br>
+        
+        <button type="button" onclick="confirmarStatusContrato()">OK</button>
+        <button type="button" onclick="fecharModal()">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modais (fora da tabela!) -->
+{% for contrato in contratos %}
+  <div id="modal-{{ contrato.id }}" class="modal" aria-hidden="true">
+      <div class="modal-content">
+          <p>Tem certeza que deseja excluir este Contrato?<p>
+          <p>Esta operação não poderá ser desfeita!</p>
+          <div class="modal-actions">
+              <form action="{{ url_for('contratos.deletar_contrato', id=contrato.id) }}" method="POST">
+                  <button type="submit" class="btn btn-secondary-confirm">Confirmar</button>
+              </form>
+              <button type="button" class="btn btn-secondary" onclick="fecharModalExcluirContrato({{ contrato.id }})">
+                  Cancelar
+              </button>
+          </div>
+      </div>
+  </div>
+{% endfor %}
+
+
+
+<!-- Estilo básico para o modal -->
+<style>
+  .btn-secondary {
+        background-color: #3b4854;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        height: 40px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-secondary:hover {
+        background-color: #e41010;
+    }
+
+    .btn-secondary-confirm {
+        background-color: #3b4854;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        height: 40px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-secondary-confirm:hover {
+        background-color: #20af3f;
+    }
+
+  /* Estilo para a legenda */
+  .legenda {
+    text-align: left;
+    margin-top: 15px;
+    font-size: 14px;
+  }
+  
+  .legenda span {
+    margin-right: 15px;
+    font-weight: bold;
+  }
+  
+  /* Estilo do modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    margin: 10% auto; /* Posiciona o modal mais próximo ao topo */
+    padding: 20px;
+    border-radius: 8px;
+    width: 25%; /* Reduz o tamanho do modal */
+    text-align: center; /* Alinha o conteúdo à esquerda */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .modal-content h3 {
+    margin: 0 0 15px;
+    font-size: 18px;
+    text-align: center; /* Ajusta o tamanho da fonte para o título */
+  }
+  
+  .modal-content label {
+    display: flex; /* Permite alinhamento horizontal dos botões de rádio e texto */
+    align-items: center;
+    margin-bottom: 10px; /* Espaçamento entre os itens */
+    margin-left: 30px;
+    font-size: 14px; /* Ajusta o tamanho da fonte */
+  }
+  
+  .modal-content input[type="radio"] {
+    margin-right: 10px; /* Espaço entre o botão de rádio e o texto */
+  }
+  
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close:hover {
+    color: #000;
+  }
+  
+  /* Botões no modal */
+  .modal-content button {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: #fff;
+  }
+  
+  .modal-content button:hover {
+    background-color: #0056b3;
+  }
+  
+  .modal-content button:nth-child(2) {
+    background-color: #6c757d;
+  }
+  
+  .modal-content button:nth-child(2):hover {
+    background-color: #5a6268;
+  }
+</style>
+
+<script>
+  function abrirModalExcluirContrato(id) {
+        const el = document.getElementById("modal-" + id);
+        if (el) el.style.display = "block";
+    }
+
+    function fecharModalExcluirContrato(id) {
+        const el = document.getElementById("modal-" + id);
+        if (el) el.style.display = "none";
+    }
+
+
+
+
+</script>
+
+{% endblock %}

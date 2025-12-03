@@ -1,0 +1,121 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+{{ 'Editar Cliente' if cliente else 'Cadastrar Cliente' }}
+{% endblock %}
+
+{% block content %}
+<div id="conteudo-clientes">
+  <h2>{{ '✍ Editar Cliente' | safe  if cliente else '&#10133; Adicionar Cliente' | safe }}</h2> 
+
+  <hr>
+
+  <form method="post" id="form-cadastro-cliente" onsubmit="return validarFormulario();">
+    {% if cliente %}
+      <input type="hidden" id="cliente_id" name="cliente_id" value="{{ cliente.id }}">
+    {% endif %}
+    <div class="form-group">
+      <label for="nome">Nome: <span class="erro">*</span></label>
+      <input type="text" id="nome" name="nome" value="{{ cliente.nome if cliente else '' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="cnpj">CNPJ: <span class="erro">*</span></label>
+      <input type="text" id="cnpj" name="cnpj" value="{{ cliente.cnpj if cliente else '' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="observacao">Observação: *</label>
+      <input type="text" id="observacao" name="observacao" value="{{ cliente.observacao if cliente else '' }}">
+    </div>
+
+    <div class="form-group botoes">
+      <input type="submit" value="Salvar" class="btn-salvar">
+      <a href="{{ url_for('clientes.listar_clientes') }}" class="btn-cancelar">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  /* Mantém os estilos anteriores */
+  #conteudo-clientes {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  .botoes {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  .btn-salvar {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-cancelar {
+    background-color: #6c757d;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+</style>
+
+<script>
+  function validarFormulario() {
+    const nome = document.getElementById('nome');
+    if (!nome.value.trim()) {
+      alert('O campo Nome é obrigatório.');
+      return false;
+    }
+    return true;
+  }
+</script>
+{% endblock %}

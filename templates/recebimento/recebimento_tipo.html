@@ -1,0 +1,28 @@
+<table border="1" cellpadding="5" cellspacing="0" id="tabelaRecebimentos">
+    <thead>
+        <tr>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(0, this)">NF</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(1, this)">Cliente</th> 
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(2, this)">Contrato</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(3, this)">Banco</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(4, this)">Data</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(5, this)">R$ Bruto</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(6, this)">R$ Líquido</th>
+            <th cursor: style="cursor: pointer; background-color: rgb(199, 199, 211);" style="text-align: center;" onclick="ordenarTabelaRecebimento(7, this)">Tipo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recebimento in recebimentos %}
+            <tr>
+                <td style="text-align: center;" data-label="Cliente">{{ recebimento.numero_nf }}</td>
+                <td style="text-align: center;" data-label="Cliente">{{ recebimento.cliente }}</td>
+                <td style="text-align: center;" data-label="numero_projeto">{{ recebimento.contrato.numero_contrato }}</td>
+                <td data-label="Descrição" class="descricao">{{ recebimento.banco.nome }}</td> 
+                <td style="text-align: center;" data-label="Data">{{ recebimento.data_pagamento.strftime("%d/%m/%y") }}</td> 
+                <td style="text-align: center;">{{ "%.2f"|format(recebimento.valor_bruto) }}</td>   
+                <td style="text-align: center;">{{ "%.2f"|format(recebimento.valor_liquido) }}</td>
+                <td style="text-align: center;">{{ recebimento.tipo }}</td>            
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

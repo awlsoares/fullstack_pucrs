@@ -1,0 +1,239 @@
+{% extends "base/base.html" %}
+
+{% block title %} 
+  {{ 'Editar Contrato' if contrato else 'Cadastrar Contrato' }}{% endblock %}
+{% block content %}
+
+<div id="conteudo-projetos"> 
+  <h2>{{ '✍ Editar Contrato' | safe  if contrato else '&#10133; Adicionar Contrato' | safe }}</h2>
+  <hr>
+
+  <form method="post" id="form-cadastro-projeto" onsubmit="return validarFormulario();">
+
+    <div style="display: flex; gap: 20px;">
+      <div class="form-group">
+        <label for="data_assinatura">Data de Assinatura: <span class="erro">*</span></label>
+        <input type="date" id="data_assinatura" name="data_assinatura" value="{{ contrato.data_assinatura if contrato else '' }}" required>
+      </div>
+
+      {% if contrato %}
+        <div class="form-group">
+          <label for="numero_contrato">Número do Contrato: <span class="erro">*</span></label>
+          <label style="text-align: center;" id="numero_contrato">{{ contrato.numero_contrato }}</label>
+        </div> 
+      {% endif %}
+
+      <div class="form-group">
+        <label for="numero_proposta">Número da Proposta: <span class="erro">*</span></label>
+        <input type="text" id="numero_proposta" name="numero_proposta" value="{{ numero_proposta }}" readonly>
+      </div>
+      
+    </div>
+
+    <div class="form-group">
+      <label for="cliente_nome">Cliente: <span class="erro">*</span></label>
+      <input 
+              style=" 
+                background-color: #ffffff; 
+                border: 1px solid #ccc; text-align: left;" 
+              type="text" 
+              id="cliente_nome" 
+              name="cliente_nome" 
+              value="{{ cliente.nome }}"  
+              readonly>
+      <div style="display: none;" id="cliente_id" name="cliente_id"> {{ cliente.id }}</div>
+      <!-- <select id="cliente_id" name="cliente_id" required>
+          <option value="">Selecione</option>
+          {% for cliente in clientes %}
+              <option value="{{ cliente.id }}" {% if contrato and cliente.id == cliente_do_contrato %}selected{% endif %}>
+                  {{ cliente.nome }}
+              </option>
+          {% endfor %}
+      </select> -->
+    </div>
+
+    <div class="form-group">
+      <label for="escopo">Escopo: <span class="erro">*</span></label>
+      <input type="text" id="escopo" name="escopo" value="{{ escopo }}" readonly>
+    </div>
+
+    <div style="display: flex; gap: 20px;">
+      <div class="form-group">
+        <label for="valor_assinatura">Assinatura (R$): <span class="erro">*</span></label>
+        <input type="number" step="0.01" id="valor_assinatura" name="valor_assinatura" value="{{ valor_assinatura }}" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="valor_protocolo">Protocolo (R$): <span class="erro">*</span></label>
+        <input type="number" step="0.01" id="valor_protocolo" name="valor_protocolo" value="{{ valor_protocolo }}" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="valor_conclusao">Conclusão (R$): <span class="erro">*</span></label>
+        <input type="number" step="0.01" id="valor_conclusao" name="valor_conclusao" value="{{ valor_conclusao }}" readonly>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="observacao">Observação: <span class="erro">*</span></label>
+      <input type="text" id="observacao" name="observacao" value="{{ observacao }}" required>
+    </div>
+
+    <div class="form-group botoes">
+      <input type="submit" value="Salvar" class="btn-salvar">
+      <a href="{{ url_for('contratos.listar_contratos') }}" class="btn-cancelar">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  /* Estilo geral */
+  #conteudo-projetos {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+
+  /* Estilo dos campos do formulário */
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  .erro {
+    color: red;
+    font-size: 12px;
+    display: none;
+    margin-left: 4px;
+  }
+
+  /* Botões */
+.botoes {
+    display: flex; /* Alinha os botões lado a lado */
+    justify-content: center; /* Centraliza os botões horizontalmente */
+    gap: 15px; /* Espaço entre os botões */
+    margin-top: 20px;
+  }
+
+  .btn-salvar {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-salvar:hover {
+    background-color: #0056b3;
+  }
+
+  .btn-cancelar {
+    background-color: #6c757d;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+    text-decoration: none;
+  }
+
+  .btn-cancelar:hover {
+    background-color: #5a6268;
+  }
+</style>
+
+<script>
+  function validarFormulario() {
+    let valido = true;
+
+    // Campos obrigatórios
+    const camposObrigatorios = [
+      'data_assinatura',
+      'cliente_id',
+      'escopo',
+      'valor_assinatura',
+      'valor_protocolo',
+      'valor_conclusao'
+    ];
+
+    camposObrigatorios.forEach(function(campoId) {
+      const campo = document.getElementById(campoId);
+      const label = campo.previousElementSibling.querySelector('.erro');
+
+      if (!campo.value.trim()) {
+        campo.value = '';
+        if (label) label.style.display = 'inline';
+        valido = false;
+      } else {
+        if (label) label.style.display = 'none';
+      }
+    });
+
+    // Validação específica de números decimais não negativos
+    const camposNumericos = [
+      'valor_assinatura',
+      'valor_protocolo',
+      'valor_conclusao'
+    ];
+
+    camposNumericos.forEach(function(campoId) {
+      const campo = document.getElementById(campoId);
+      const valor = parseFloat(campo.value);
+
+      const regexDecimal = /^\d+(\.\d{1,2})?$/;
+
+      if (isNaN(valor) || valor < 0 || !regexDecimal.test(campo.value)) {
+        campo.value = '';
+        const label = campo.previousElementSibling.querySelector('.erro');
+        if (label) label.style.display = 'inline';
+        valido = false;
+      }
+    });
+
+    return valido;
+  }
+</script>
+
+{% endblock %}

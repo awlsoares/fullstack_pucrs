@@ -1,0 +1,483 @@
+{% block content %}
+
+<div id="conteudo-indicadores">
+
+    <!-- Gráfico de Pizza - Propostas -->
+    <div class="indicador">
+        <a href="{{ url_for('propostas.listar_propostas') }}">
+            <canvas id="propostasChart" style="width:100%; max-width:600px;"></canvas>
+        </a>
+    </div>
+
+    <!-- Gráfico de Pizza - Contratos -->
+    <div class="indicador">
+        <a href="{{ url_for('contratos.listar_contratos') }}">
+            <canvas id="contratosChart" style="width:100%; max-width:600px;"></canvas>
+        </a>
+    </div>
+
+    <!-- Gráfico de Pizza - Notas Fiscais -->
+    <div class="indicador">
+        <a href="{{ url_for('nfs.listar_nfs') }}">
+            <canvas id="nfsChart" style="width:100%; max-width:600px;"></canvas>
+        </a>
+    </div>
+
+    <!-- Gráfico de Barras - Faturamento Anual -->
+    <div class="indicador">
+        <a href="{{ url_for('dashboard_faturamento.dashboard_grafico_faturamento') }}">
+            <canvas id="faturamentoAnualChart" style="width:100%;max-width:600px; height: 450px;"></canvas>
+        </a>
+    </div>
+
+    <!-- Gráfico de Pizza - Notas Fiscais -->
+    <div class="indicador">
+        <a href="{{ url_for('nfs.listar_nfs') }}">
+            <canvas id="recebimentosChart" style="width:100%; max-width:600px; height: 450px;"></canvas>
+        </a>
+    </div>
+
+    <!-- Div para outro gráfico -->
+    <div class="indicador">
+        
+    </div>
+
+</div>
+
+
+<style>
+    canvas {
+        width: 300px !important; /* Define uma largura fixa */
+        height: 300px !important; /* Define uma altura fixa igual à largura */
+        margin: 0 auto; /* Centraliza o canvas */
+        display: block; /* Garante que o canvas seja tratado como um bloco */
+    }
+
+    #conteudo-indicadores {
+    display: flex; /* Alinha os elementos horizontalmente */
+    flex-wrap: wrap; /* Permite que os gráficos quebrem para a linha seguinte, se necessário */
+    justify-content: space-around; /* Espaçamento uniforme entre os elementos */
+    gap: 20px; /* Espaçamento entre os gráficos */
+    }
+
+    .indicador {
+        flex: 1 1 30%; /* Cada gráfico ocupa 30% da largura do contêiner */
+        display: flex;
+        justify-content: center; /* Centraliza o canvas dentro do div */
+        align-items: center; /* Alinha o canvas verticalmente */
+        max-width: 600px; /* Limite de largura */
+    }
+</style>
+
+<script>
+    
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Gráfico de Rosca para Propostas
+    const propostasData = {
+        total: {{ propostas_total }},
+        aprovadas: {{ propostas_aprovadas }},
+        reprovadas: {{ propostas_reprovadas }},
+        aguardando: {{ propostas_canceladas }}
+    };
+
+    const propostasCtx = document.getElementById("propostasChart").getContext("2d");
+
+    new Chart(propostasCtx, {
+        type: "doughnut", // Altere o tipo para 'doughnut'
+        data: {
+            labels: ["Aprovadas", "Reprovadas", "Aguardando Aprovação"],
+            datasets: [{
+                data: [propostasData.aprovadas, propostasData.reprovadas, propostasData.aguardando],
+                backgroundColor: ["#98FB98", "#F44336", "#FFC107"], // Cores para cada fatia
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, // Mantém a proporção circular do gráfico
+            plugins: {
+                legend: {
+                    position: "bottom", // Posiciona a legenda abaixo do gráfico
+                    labels: {
+                        font: {
+                            size: 12 // Tamanho da fonte da legenda
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Propostas",
+                    font: {
+                        size: 18, // Tamanho da fonte do título
+                        weight: "bold", // Peso da fonte do título
+                        family: "'Arial', sans-serif" // Família da fonte do título
+                    },
+                    padding: {
+                        top: 10, // Espaçamento acima do título
+                        bottom: 15 // Espaçamento abaixo do título
+                    }
+                }
+            }
+        },
+        plugins: [{
+            beforeDraw: function(chart) {
+                // Obtém o contexto do canvas do gráfico
+                const ctx = chart.ctx;
+                const width = chart.width;
+                const height = chart.height;
+
+                // Define as partes do texto
+                const linha1 = "Total:";
+                const linha2 = `${propostasData.total}`; // Exibe o valor total das propostas
+
+                // Configurações de estilo do texto
+                ctx.restore();
+                ctx.font = "bold 14px Arial";
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+
+                // Coordenadas do centro do gráfico
+                const centerX = width / 2;
+                const centerY = height / 2;
+
+                // Exibe a primeira linha do texto
+                ctx.fillText(linha1, centerX, centerY - 10); // Primeira linha um pouco acima do centro
+
+                // Exibe a segunda linha do texto
+                ctx.fillText(linha2, centerX, centerY + 10); // Segunda linha um pouco abaixo do centro
+
+                ctx.save();
+            }
+        }]
+
+    });
+
+
+    // Gráfico de Contratos
+    // Dados do backend para Contratos
+    const contratosData = {
+        total: {{ contratos_total }},
+        parados: {{ contratos_parados }},
+        emAndamento: {{ contratos_em_andamento }},
+        concluidos: {{ contratos_concluidos }},
+        cancelados: {{ contratos_cancelados }}
+    };
+
+    // Obtém o contexto do canvas para o gráfico de Contratos
+    const contratosCtx = document.getElementById("contratosChart").getContext("2d");
+
+    new Chart(contratosCtx, {
+        type: "doughnut", // Altere para 'doughnut'
+        data: {
+            labels: ["Parados", "Em Andamento", "Concluídos", "Cancelados"],
+            datasets: [{
+                data: [contratosData.parados, contratosData.emAndamento, contratosData.concluidos, contratosData.cancelados],
+                backgroundColor: ["#F44336", "#87CEFA", "#98FB98", "#FFC107"], // Cores para as fatias
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, // Mantém o gráfico circular
+            plugins: {
+                legend: {
+                    position: "bottom", // Posiciona a legenda abaixo do gráfico
+                    labels: {
+                        font: {
+                            size: 12 // Tamanho da fonte da legenda
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Contratos",
+                    font: {
+                        size: 18, // Tamanho da fonte do título
+                        weight: "bold", // Peso da fonte do título
+                        family: "'Arial', sans-serif" // Família da fonte do título
+                    },
+                    padding: {
+                        top: 10, // Espaçamento acima do título
+                        bottom: 15 // Espaçamento abaixo do título
+                    }
+                }
+            }
+        },
+        plugins: [{
+            beforeDraw: function(chart) {
+                // Obtém o contexto do canvas do gráfico
+                const ctx = chart.ctx;
+                const width = chart.width;
+                const height = chart.height;
+
+                // Define as partes do texto
+                const linha1 = "Total:";
+                const linha2 = `${contratosData.total}`; // Exibe o valor total dos contratos
+
+                // Configurações de estilo do texto
+                ctx.restore();
+                ctx.font = "bold 14px Arial";
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+
+                // Coordenadas do centro do gráfico
+                const centerX = width / 2;
+                const centerY = height / 2;
+
+                // Exibe a primeira linha do texto
+                ctx.fillText(linha1, centerX, centerY - 10); // Primeira linha um pouco acima do centro
+
+                // Exibe a segunda linha do texto
+                ctx.fillText(linha2, centerX, centerY + 10); // Segunda linha um pouco abaixo do centro
+
+                ctx.save();
+            }
+        }]
+
+    });
+
+
+    // Gráfico de Notas Fiscais
+    // Dados do backend para Notas Fiscais
+    const nfsData = {
+        total: {{ nfs_total }},
+        recebidas: {{ nfs_recebidas }},
+        atrasadas: {{ nfs_atrasadas }},
+        noPrazo: {{ nfs_no_prazo }}
+    };
+
+    // Obtém o contexto do canvas para o gráfico de Notas Fiscais
+    const nfsCtx = document.getElementById("nfsChart").getContext("2d");
+
+    new Chart(nfsCtx, {
+        type: "doughnut", // Altere para 'doughnut'
+        data: {
+            labels: ["Recebidas", "Atrasadas", "No Prazo"],
+            datasets: [{
+                data: [nfsData.recebidas, nfsData.atrasadas, nfsData.noPrazo],
+                backgroundColor: ["#98FB98", "#F44336", "#87CEFA"], // Cores para as fatias
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, // Mantém o gráfico circular
+            plugins: {
+                legend: {
+                    position: "bottom", // Posiciona a legenda abaixo do gráfico
+                    labels: {
+                        font: {
+                            size: 12 // Tamanho da fonte da legenda
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Notas Fiscais",
+                    font: {
+                        size: 18, // Tamanho da fonte do título
+                        weight: "bold", // Peso da fonte do título
+                        family: "'Arial', sans-serif" // Família da fonte do título
+                    },
+                    padding: {
+                        top: 10, // Espaçamento acima do título
+                        bottom: 15 // Espaçamento abaixo do título
+                    }
+                }
+            }
+        },
+        plugins: [{
+            beforeDraw: function(chart) {
+                // Obtém o contexto do canvas do gráfico
+                const ctx = chart.ctx;
+                const width = chart.width;
+                const height = chart.height;
+
+                // Define as partes do texto
+                const linha1 = "Total:";
+                const linha2 = `${nfsData.total}`; // Exibe o valor total das notas fiscais
+
+                // Configurações de estilo do texto
+                ctx.restore();
+                ctx.font = "bold 14px Arial";
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+
+                // Coordenadas do centro do gráfico
+                const centerX = width / 2;
+                const centerY = height / 2;
+
+                // Exibe a primeira linha do texto
+                ctx.fillText(linha1, centerX, centerY - 10); // Primeira linha um pouco acima do centro
+
+                // Exibe a segunda linha do texto
+                ctx.fillText(linha2, centerX, centerY + 10); // Segunda linha um pouco abaixo do centro
+
+                ctx.save();
+            }
+        }]
+
+    });
+
+
+
+    
+    // Gráfico de Faturamento Anual
+    // Dados do backend para Faturamento Anual
+    const faturamentoAnualData = {{ faturamento_anual | tojson }};
+    const xValues = Object.keys(faturamentoAnualData).sort(); // Ordena os anos em ordem crescente
+    const yValues = xValues.map(ano => faturamentoAnualData[ano]); // Valores do faturamento
+
+    const barColors = ["#98FB98", "#87CEEB", "#FFC107", "#FFA07A", "#DA70D6", "#4335C3", "#BD23CE"]; // Paleta de cores para as barras
+
+    // Configuração do gráfico de Faturamento Anual
+    const faturamentoAnualCtx = document.getElementById("faturamentoAnualChart").getContext("2d");
+
+    new Chart(faturamentoAnualCtx, {
+        type: "bar",
+        data: {
+            labels: xValues, // Anos como rótulos no eixo X
+            datasets: [{
+                label: "R$", // Texto da legenda
+                backgroundColor: barColors, // Cores das barras
+                data: yValues // Valores do faturamento
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false, // Exibe a legenda
+                    position: "bottom", // Posiciona a legenda abaixo do gráfico
+                    labels: {
+                        font: {
+                            size: 12 // Tamanho da fonte da legenda
+                        }
+                    }
+                },
+                title: {
+                    display: true, // Exibe o título
+                    text: "Faturamento Acumulado", // Texto do título
+                    font: {
+                        size: 18, // Tamanho da fonte do título
+                        weight: "bold", // Peso da fonte do título
+                        family: "'Arial', sans-serif" // Família da fonte do título
+                    },
+                    padding: {
+                        top: 10, // Espaçamento acima do título
+                        bottom: 12 // Espaçamento abaixo do título
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true, // Inicia o eixo Y no zero
+                    title: {
+                        display: true,
+                        text: "R$", // Texto no eixo Y
+                        font: {
+                            size: 12, // Tamanho da fonte do texto no eixo Y
+                            weight: "bold" // Peso da fonte do texto no eixo Y
+                        }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: "Ano", // Texto no eixo X
+                        font: {
+                            size: 12, // Tamanho da fonte do texto no eixo X
+                            weight: "bold" // Peso da fonte do texto no eixo X
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+    // Gráfico de Faturamento Total por Status
+    // Dados do backend para somas dos valores brutos das notas fiscais
+    const recebimentosData = {
+        total: {{ soma_valor_bruto_total }},
+        recebidas: {{ soma_valor_bruto_recebido }},
+        atrasadas: {{ soma_valor_bruto_atrasadas }},
+        // noPrazo: 1500
+        noPrazo: {{ soma_valor_bruto_no_prazo }}
+    };
+
+    // Obtém o contexto do canvas para o gráfico de Rosca
+    const recebimentosCtx = document.getElementById("recebimentosChart").getContext("2d");
+
+    new Chart(recebimentosCtx, {
+        type: "doughnut", // Gráfico de rosca
+        data: {
+            labels: ["Recebidas", "Atrasadas", "No Prazo"],
+            datasets: [{
+                data: [recebimentosData.recebidas, recebimentosData.atrasadas, recebimentosData.noPrazo],
+                backgroundColor: ["#98FB98", "#F44336", "#87CEFA"], // Cores para cada categoria
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, // Mantém o gráfico circular
+            plugins: {
+                legend: {
+                    position: "bottom", // Posiciona a legenda abaixo do gráfico
+                    labels: {
+                        font: {
+                            size: 12 // Tamanho da fonte da legenda
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Faturas",
+                    font: {
+                        size: 18, // Tamanho da fonte do título
+                        weight: "bold", // Peso da fonte do título
+                        family: "'Arial', sans-serif" // Família da fonte do título
+                    },
+                    padding: {
+                        top: 10, // Espaçamento acima do título
+                        bottom: 15 // Espaçamento abaixo do título
+                    }
+                }
+            }
+        },
+        plugins: [{
+            beforeDraw: function(chart) {
+                // Obtém o contexto do canvas do gráfico
+                const ctx = chart.ctx;
+                const width = chart.width;
+                const height = chart.height;
+
+                // Define as partes do texto
+                const linha1 = "Total: R$";
+                const linha2 = `${recebimentosData.total}`;
+
+                // Configurações de estilo do texto
+                ctx.restore();
+                ctx.font = "bold 14px Arial";
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+
+                // Coordenadas do centro do gráfico
+                const centerX = width / 2;
+                const centerY = height / 2;
+
+                // Exibe a primeira linha do texto
+                ctx.fillText(linha1, centerX, centerY - 15); // Ajuste para exibir a primeira linha um pouco acima do centro
+
+                // Exibe a segunda linha do texto
+                ctx.fillText(linha2, centerX, centerY + 5); // Ajuste para exibir a segunda linha um pouco abaixo do centro
+
+                ctx.save();
+            }
+        }]
+    });
+
+
+
+});
+</script>
+
+{% endblock %}

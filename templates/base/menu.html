@@ -1,0 +1,111 @@
+<!-- templates/menu.html -->
+<nav id="sidebar">
+  <button id="toggle-menu-btn">☰ <span class="toggle-text">Essencial</span></button>
+  <ul class="menu">
+    <li class="menu-item">
+      <a href="{{ url_for('indicadores.kpi') }}" class="menu-link-2">&#127968 Home</a>
+    </li>
+    <li class="menu-item">
+      <a class="menu-link">&#128218 Propostas</a>
+      <ul class="submenu">
+        <li><a href="{{ url_for('propostas.nova_proposta') }}" class="submenu-link">&#x0002b Cadastrar</a></li>
+        <li><a href="{{ url_for('propostas.listar_propostas') }}" class="submenu-link">&#128214 Listar</a></li>
+      </ul>
+    </li>
+    <li class="menu-item">
+      <a class="menu-link">&#128209 Contratos</a>
+      <ul class="submenu">
+        <!-- <li><a href="{{ url_for('contratos.novo_contrato') }}" class="submenu-link">&#10133 Cadastrar</a></li> -->
+        <li><a href="{{ url_for('contratos.listar_contratos') }}" class="submenu-link">&#128214 Listar</a></li>
+      </ul>
+    </li>
+    
+    <li class="menu-item">
+      <a class="menu-link">&#128176 Notas Fiscais</a>
+      <ul class="submenu">
+        <li><a href="{{ url_for('nfs.listar_nfs') }}" class="submenu-link">&#128196 Notas</a></li>
+        <li><a href="{{ url_for('dashboard_faturamento.dashboard_grafico_faturamento') }}" class="submenu-link">&#128200 Faturamento</a></li>     
+        <li><a href="{{ url_for('dashboard_recebimento.dashboard_grafico_recebimento') }}" class="submenu-link">&#128200 Recebimento</a></li>
+      </ul>     
+    </li>
+
+    <li class="menu-item">
+      <a class="menu-link">&#128390 Movimentações</a>
+      <ul class="submenu">
+        <li><a href="{{ url_for('movimentacoes.nova_movimentacao') }}" class="submenu-link">&#x0002b Cadastrar</a></li>
+        <li><a href="{{ url_for('movimentacoes.listar_movimentacoes') }}" class="submenu-link">&#128214 Listar</a></li>
+        <li><a href="{{ url_for('dados_rfb_dre.rfb_consolidado') }}" class="submenu-link">&#128214 RFB</a></li>
+        <li><a href="{{ url_for('dados_rfb_dre.dre_fluxo') }}" class="submenu-link">&#128214 DRE</a></li> 
+      </ul>     
+    </li>
+
+    <li class="menu-item">
+      <a class="menu-link">&#128736 Configurações</a>
+      <ul class="submenu">
+        <li class="menu-item">
+          <a class="menu-link">&#128101 Clientes</a>
+          <ul class="submenu">
+            <li><a href="{{ url_for('clientes.novo_cliente') }}" class="submenu-link">&#x0002b Cadastrar</a></li>
+            <li><a href="{{ url_for('clientes.listar_clientes') }}" class="submenu-link">&#128214 Listar</a></li>
+          </ul>
+        </li>    
+        <li class="menu-item">
+          <a class="menu-link">&#127974 Bancos</a>
+          <ul class=" submenu">
+            <li><a href="{{ url_for('bancos.novo_banco') }}" class="submenu-link">&#x0002b Cadastrar</a></li>
+            <li><a href="{{ url_for('bancos.listar_bancos') }}" class="submenu-link">&#128214 Listar</a></li>
+          </ul>
+        </li>
+        <!-- <li><a href="{{ url_for('importar_movimentacoes.importar_dados') }}" class="submenu-link">&#128196 Importar Movimentações</a></li> -->
+         <!-- <li><a href="{{ url_for('importar_propostas.importar_dados') }}" class="submenu-link">&#128196 Importar Propostas</a></li> -->
+      </ul>
+    </li>
+
+    <!-- <li class="menu-item">
+      <a class="menu-link">&#128736 Dados</a>
+      <ul class="submenu">
+        <li class="menu-item">
+          <a class="menu-link">1º Clientes</a>
+            <ul class="submenu">
+              <li><a href="{{ url_for('importar_clientes.importar_dados') }}" class="submenu-link">&#128196 Importar</a></li>
+            </ul>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link">2º Propostas</a>
+            <ul class="submenu">
+              <li><a href="{{ url_for('importar_propostas.importar_dados') }}" class="submenu-link">&#128196 Importar</a></li>
+            </ul>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link">3º Contratos</a>
+            <ul class="submenu">
+              <li><a href="{{ url_for('gerar_contratos_da_importacao.gerar_contratos_da_importacao') }}" class="submenu-link">&#128196 Criar</a></li>
+            </ul>
+        </li>
+      </ul>
+    </li> -->
+
+    <!-- <li class="menu-item">
+      <a class="menu-link">&#128184 Despesas</a>
+      <ul class="submenu">  
+        <li class="menu-item">
+          <a class="menu-link">&#9989 Tipos</a>
+          <ul class="submenu">
+            <li><a href="{{ url_for('despesas.despesa_novo_tipo') }}" class="submenu-link">&#x0002b Cadastrar</a></li>
+            <li><a href="{{ url_for('despesas.despesa_listar_tipo') }}" class="submenu-link">&#128214 Listar</a></li>
+          </ul>
+        </li>    
+      </ul>
+    </li> -->
+
+    <!-- <li class="menu-item">
+      <a class="menu-link">&#128270 Relatórios (&#128296)</a>
+      <ul class="submenu">  
+        <li class="menu-item"><a class="submenu-link">&#128221 Faturamento</a></li>    
+        <li class="menu-item"><a class="submenu-link">&#128176 Entradas (&#128296)</a></li>
+        <li class="menu-item"><a class="submenu-link">&#128184 Saídas (&#128296)</a></li>
+      </ul>
+    </li> -->
+
+  </ul>
+</nav>

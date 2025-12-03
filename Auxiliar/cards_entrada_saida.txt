@@ -1,0 +1,9 @@
+        <div class="resumo-card entrada">
+            <h3>Entradas</h3>
+            <p id="resumo-entrada">R$ {{ "%.2f"|format(total_entradas or 0) }}</p>
+        </div>
+        
+        <div class="resumo-card saida">
+            <h3>Saídas</h3>
+            <p id="resumo-saida">R$ {{ "%.2f"|format(total_saidas or 0) }}</p>
+        </div>

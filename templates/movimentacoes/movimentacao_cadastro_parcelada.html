@@ -1,0 +1,381 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    {{ 'Editar Movimentacao' if movimentacao else 'Cadastrar Movimentacao' }}
+{% endblock %}
+
+{% block content %}
+<div id="conteudo-movimentacoes" class="card">
+    <h2>{{ '✍ Editar Movimentacao' | safe if movimentacao else '&#10133 Adicionar Movimentação' | safe }}</h2> 
+    <hr>
+
+    <form method="post" id="form-cadastro-movimentacao" onsubmit="return validarFormulario();">
+        {% if movimentacao %}
+            <input type="hidden" id="movimentacao_id" name="movimentacao_id" value="{{ movimentacao.id }}">
+        {% endif %}
+
+        <!-- LINHA com 4 colunas -->
+        <div class="linha-form">
+            <div class="form-group campo-data">
+                <label for="data">Data: <span class="erro">*</span></label>
+                <input type="date" id="data" name="data"
+                    value="{{ movimentacao.data if movimentacao else '' }}" required>
+            </div>
+
+            <div class="form-group campo-competencia">
+                <label for="competencia">Competência (Mês/Ano): <span class="erro">*</span></label>
+                <input type="month" id="competencia" name="competencia"
+                    value="{{ '%04d-%02d'|format(movimentacao.ano, movimentacao.mes) if movimentacao else '' }}" required>
+            </div>
+
+            <div class="form-group campo-valor">
+                <label for="valor">Valor (R$): <span class="erro">*</span></label>
+                <input type="number" step="0.01" min="0.01" id="valor" name="valor"
+                    value="{{ movimentacao.valor if movimentacao else '' }}" required>
+            </div>
+
+            <div class="form-group campo-parcelas">
+                <label for="parcelas">Nº Parcelas: <span class="erro">*</span></label>
+                <input type="number" step="1" min="2" id="parcelas" name="parcelas" required>
+            </div>
+ 
+        </div>
+
+
+        <!-- Linha com 3 colunas -->
+        <div class="linha-form">
+            <div class="form-group campo-metodo">
+                <label for="forma_de_pagamento">Método: <span class="erro">*</span></label>
+                <select id="forma_de_pagamento" name="forma_de_pagamento" required>
+                    <option value="">Selecione</option>
+                    <option value="Boleto - Cora" {% if movimentacao and movimentacao.forma_de_pagamento == 'Boleto - Cora' %}selected{% endif %}>Boleto - Cora</option>
+                    <option value="Boleto - Inter" {% if movimentacao and movimentacao.forma_de_pagamento == 'Boleto - Inter' %}selected{% endif %}>Boleto - Inter</option>
+                    <option value="Cora" {% if movimentacao and movimentacao.forma_de_pagamento == 'Cora' %}selected{% endif %}>Cora</option>
+                    <option value="Inter" {% if movimentacao and movimentacao.forma_de_pagamento == 'Inter' %}selected{% endif %}>Inter</option>
+                    <option value="Pix - Cora" {% if movimentacao and movimentacao.forma_de_pagamento == 'Pix - Cora' %}selected{% endif %}>Pix - Cora</option>
+                    <option value="Pix - Inter" {% if movimentacao and movimentacao.forma_de_pagamento == 'Pix - Inter' %}selected{% endif %}>Pix - Inter</option>
+                    <option value="TED - Cora" {% if movimentacao and movimentacao.forma_de_pagamento == 'TED - Cora' %}selected{% endif %}>TED - Cora</option>
+                    <option value="TED - Inter" {% if movimentacao and movimentacao.forma_de_pagamento == 'TED - Inter' %}selected{% endif %}>TED - Inter</option>
+                    <option value="Outros" {% if movimentacao and movimentacao.forma_de_pagamento == 'Outros' %}selected{% endif %}>Outros</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="operacao">Operação: <span class="erro">*</span></label>
+                <select id="operacao" name="operacao" required>
+                    <option value="">Selecione</option>
+                    <option value="Entrada" {% if movimentacao and movimentacao.operacao == 'Entrada' %}selected{% endif %}>Entrada</option>
+                    <option value="Saída" {% if movimentacao and movimentacao.operacao == 'Saída' %}selected{% endif %}>Saída</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="movimentacao_tipo">Tipo: <span class="erro">*</span></label>
+                <select id="movimentacao_tipo" name="movimentacao_tipo" required>
+                    <option value="">Selecione a Operação</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="movimentacao_categoria">Categoria: <span class="erro">*</span></label>
+                <select id="movimentacao_categoria" name="movimentacao_categoria" required>
+                    <option value="">Selecione o Tipo</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label for="descricao">Descrição: <span class="erro">*</span></label>
+            <input type="text" id="descricao" name="descricao" rows="2" value="{{ movimentacao.descricao if movimentacao else '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="observacao">Observação:</label>
+            <input type="text" id="observacao" name="observacao" rows="2" value="{{ movimentacao.observacao if movimentacao else '' }}">
+        </div>
+
+        <div class="botoes">
+            <input type="submit" value="Salvar" class="btn-salvar">
+            <a href="{{ url_for('movimentacoes.listar_movimentacoes') }}" class="btn-cancelar">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Card container */
+    #conteudo-movimentacoes {
+        max-width: 700px;
+        margin: 20px auto;
+        padding: 5px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif; 
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+        margin-top: 1px;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid #eee;
+        margin-bottom: 20px;
+    }
+
+    /* Alinhamento flexível para grupos de 2 ou 3 colunas */
+    .linha-form {
+    display: flex;
+    gap: 20px;             /* espaço igual entre colunas */
+    flex-wrap: wrap;
+    }
+
+    .form-group {
+    display: flex;
+    flex-direction: column;
+    }
+
+    /* larguras individuais */
+    .campo-data input {
+    width: 140px;
+    }
+
+    .campo-competencia input {
+    width: 170px;
+    }
+
+    .campo-valor input {
+    width: 110px;
+    }
+
+    .campo-parcelas input {
+    width: 100px;
+    }
+
+    .campo-metodo select {
+    width: 150px;
+    }
+
+    /* estilo comum para todos */
+    .form-group input,
+    .form-group select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-group label {
+    margin-bottom: 4px;
+    color: #444;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+    }
+
+
+    .text-muted {
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    /* Botões */
+    .botoes {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .btn-salvar,
+    .btn-cancelar {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn-salvar {
+        background-color: #007BFF;
+        color: #fff;
+        border: none;
+    }
+
+    .btn-salvar:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-cancelar {
+        background-color: #6c757d;
+        color: #fff;
+        border: none;
+    }
+
+    .btn-cancelar:hover {
+        background-color: #5a6268;
+    }
+
+    .erro {
+        color: red;
+        font-size: 12px;
+        margin-left: 4px;
+    }
+</style>
+
+<script>
+    console.log("JavaScript carregado!");
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const dataInput = document.getElementById('data');
+        const competenciaInput = document.getElementById('competencia');
+
+        function atualizarCompetencia() {
+            if (dataInput.value) {
+                const data = new Date(dataInput.value + 'T00:00:00');
+                const ano = data.getFullYear();
+                const mes = String(data.getMonth() + 1).padStart(2, '0');
+                const competencia = `${ano}-${mes}`;
+                console.log(`Atualizando competencia para: ${competencia}`);
+                competenciaInput.value = competencia;
+            }
+        }
+
+        // Atualizar competencia quando data muda
+        dataInput.addEventListener('change', atualizarCompetencia);
+
+        // Preencher competencia na primeira vez se data já estiver preenchida
+        if (dataInput.value && !competenciaInput.value) {
+            atualizarCompetencia();
+        }
+    });
+
+    function validarFormulario() {
+        const camposObrigatorios = [
+            'operacao', 
+            'data',
+            'competencia',
+            'forma_de_pagamento',
+            'movimentacao_tipo',
+            'movimentacao_categoria',
+            'descricao',
+            'valor'
+        ];
+
+        for (let campo of camposObrigatorios) {
+            const elemento = document.getElementById(campo);
+            if (!elemento.value.trim()) {
+                alert('O campo ' + elemento.previousElementSibling.textContent.replace('*', '').trim() + ' é obrigatório.');
+                return false;
+            }
+        }
+
+        // Validação para não começar com "NF_" (mantida)
+        const descricao = document.getElementById('descricao').value.trim();
+        if (descricao.toUpperCase().startsWith('NF_')) {
+            alert('A descrição não pode iniciar com "NF_" ou com "nf_". Por favor, altere.');
+            document.getElementById('descricao').focus();
+            return false;
+        }
+
+        return true;
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const operacaoSelect = document.getElementById('operacao');
+        const statusSelect = document.getElementById('status_pagamento');
+        const tipoSelect = document.getElementById('movimentacao_tipo');
+        const categoriaSelect = document.getElementById('movimentacao_categoria');
+
+        // Tabelas de opções 
+        const tiposPorOperacao = {
+            'Entrada': ['Aporte', 'Juros', 'Resgate', 'Receita'],
+            'Saída': ['Aplicação', 'Despesa', 'Distribuição de Lucros', 'Reserva de Caixa', 'Taxa de Captação', 'Transferência']
+        };
+
+        const categoriasPorTipo = {
+            // Entradas
+            'Aporte': ['Recursos Próprios', 'Investidor Externo'],
+            'Juros': ['NF Atrasada', 'Rendimento de Investimento'],
+            'Resgate': ['Resgate de Investimento'],
+            'Receita': ['Prestação de Serviço'],
+            
+            // Saídas
+            'Aplicação': ['Aplicação em Investimento'],
+            'Despesa': ['Alimentação', 'Aluguel', 'Anuidade', 'Certificado Digital', 'Contabilidade', 
+                        'Energia', 'Imposto', 'Internet', 'Material de Expediente', 'Outras', 'Pro-labore', 
+                        'Simples Nacional', 'Taxas', 'Treinamento', 'Viagem'],
+            'Distribuição de Lucros': ['GPM', 'SPL'],
+            'Reserva de Caixa': ['Reserva de Caixa'],
+            'Taxa de Captação': ['GPM', 'SPL'],
+            'Transferência': ['Transferência']
+        };
+
+        // Status por operação
+        const statusPorOperacao = {
+            'Entrada': ['Aberto', 'Recebido', 'Cancelado'],
+            'Saída': ['Aberto', 'Pago', 'Cancelado']
+        };
+
+        // Função genérica para popular selects
+        function popularSelect(select, opcoes, msgInicial) {
+            select.innerHTML = '';
+            if (!opcoes) {
+                select.disabled = true;
+                select.appendChild(new Option(msgInicial, ''));
+                return;
+            }
+            select.disabled = false;
+            select.appendChild(new Option('--Selecione--', ''));
+            opcoes.forEach(opt => {
+                select.appendChild(new Option(opt, opt));
+            });
+        }
+
+        // Quando muda a operação
+        operacaoSelect.addEventListener('change', function () {
+            const op = this.value;
+            // Popular tipos
+            popularSelect(tipoSelect, tiposPorOperacao[op], 'Selecione a Operação');
+            // Limpar categorias
+            popularSelect(categoriaSelect, null, 'Selecione o Tipo');
+            // Popular status
+            popularSelect(statusSelect, statusPorOperacao[op], 'Selecione a Operação');
+        });
+
+        // Quando muda o tipo
+        tipoSelect.addEventListener('change', function () {
+            const tp = this.value;
+            popularSelect(categoriaSelect, categoriasPorTipo[tp], 'Selecione o Tipo');
+        });
+
+        // Caso esteja editando movimentação já existente (pré-popular os selects)
+        const operacaoInicial = "{{ movimentacao.operacao if movimentacao else '' }}";
+        const tipoInicial = "{{ movimentacao.movimentacao_tipo if movimentacao else '' }}";
+        const categoriaInicial = "{{ movimentacao.movimentacao_categoria if movimentacao else '' }}";
+        // const statusInicial = "{{ movimentacao.status_pagamento if movimentacao else '' }}";
+
+        if (operacaoInicial) {
+            // Popular tipo
+            popularSelect(tipoSelect, tiposPorOperacao[operacaoInicial], 'Selecione a Operação');
+            tipoSelect.value = tipoInicial;
+
+            // Popular categoria
+            if (tipoInicial) {
+                popularSelect(categoriaSelect, categoriasPorTipo[tipoInicial], 'Selecione o Tipo');
+                categoriaSelect.value = categoriaInicial;
+            }
+        }
+    });
+</script>
+{% endblock %}

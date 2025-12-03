@@ -1,0 +1,39 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    Lista de Cliente 
+{% endblock %}
+ 
+{% block content %}
+<div id="conteudo-projetos">
+    <div class="cabecalho-projetos">
+        <h2>&#128214 Lista de Clientes</h2>
+        <a href="{{ url_for('clientes.novo_cliente') }}" class="submenu-link">&#10133 Novo Cliente</a>
+    </div>
+
+    <hr>
+
+    <table border="1" cellpadding="5" cellspacing="0" id="tabelaClientes" style="max-width: 750px;  margin: 0 auto;">
+        <thead>
+            <tr>
+                <th style="text-align: center; width: 20px;" hidden>ID</th>
+                <th style="text-align: center;">Cliente</th>
+                <th style="text-align: center;">CNPJ</th>
+                <th style="text-align: center;">Observações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td onclick="abrirFormularioEdicaoCliente({{ cliente.id }})" style="cursor: pointer; color: blue; text-align: center;" hidden>
+                    {{ cliente.id }}
+                </td>
+                <td onclick="abrirFormularioEdicaoCliente({{ cliente.id }})" style="cursor: pointer; color: blue; text-align: center;" data-label="Cliente">{{ cliente.nome }}</td>
+                <td style="text-align: center;" data-label="CNPJ">{{ cliente.cnpj }}</td>
+                <td style="text-align: left;" data-label="Data">{{ cliente.observacao }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

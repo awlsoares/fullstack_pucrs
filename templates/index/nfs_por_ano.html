@@ -1,0 +1,72 @@
+
+<body>
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <h4>Notas Ficais por Ano</h4>
+        <canvas id="graficoNotas" width="100" height="50"></canvas>
+        
+    </div>
+
+    <script>
+        // Função para buscar os dados do backend
+        async function obterDadosNotas() {
+            const response = await fetch('/api/notas_por_ano');
+            const data = await response.json();
+            
+            // Processa os dados para usar no gráfico
+            const anos = Object.keys(data); // Pega os anos como rótulos (labels)
+            const quantidades = Object.values(data); // Pega as quantidades como valores
+
+            // Gera o gráfico com Chart.js
+            gerarGrafico(anos, quantidades);
+        }
+
+        // Função para gerar o gráfico
+        function gerarGrafico(labels, data) {
+            const ctx = document.getElementById('graficoNotas').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut', // Tipo do gráfico: rosca (doughnut)
+                data: {
+                    labels: labels, // Anos como rótulos (labels)
+                    datasets: [{
+                        label: 'Notas Fiscais Emitidas',
+                        data: data, // Quantidades como valores
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.7)',  // Cor para o primeiro ano
+                            'rgba(255, 99, 132, 0.7)',  // Cor para o segundo ano
+                            'rgba(54, 162, 235, 0.7)',  // Cor para o terceiro ano
+                            'rgba(255, 206, 86, 0.7)',  // Cor para o quarto ano
+                            'rgba(153, 102, 255, 0.7)', // Cor para o quinto ano
+                            'rgba(255, 159, 64, 0.7)'   // Cor para o sexto ano
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1 // Largura da borda
+                    }]
+                },
+                options: {
+                    responsive: true, // Gráfico responsivo
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom' // Posiciona a legenda abaixo do gráfico
+                            //position: 'top' // Posição da legenda
+                            
+                        },
+                        tooltip: {
+                            enabled: true // Habilita os tooltips
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chama a função para buscar os dados e gerar o gráfico
+        obterDadosNotas();
+    </script>
+</body>

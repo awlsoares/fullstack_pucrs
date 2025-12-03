@@ -1,0 +1,78 @@
+# 1) Vá para a pasta do projeto
+cd ~/Desktop/sistema_simples_flask
+
+# 2) Apague o repositório Git local antigo (somente a pasta .git) - CASO NECESSÁRIO apagar git local antigo.
+rm -rf .git
+
+# 3) Crie o .gitignore (cole tudo entre EOF e EOF) - CASO NECESSÁRIO, e não tenha sido criado anteriormente.
+cat > .gitignore << 'EOF'
+# Python / Flask
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+instance/
+*.db
+*.sqlite3
+
+# Virtualenv
+venv/
+.venv/
+env/
+ENV/
+
+# Variáveis de ambiente
+.env
+*.env
+
+# Logs
+*.log
+
+# Node.js / JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / distribuição
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Dumps do PostgreSQL
+*.sql
+*.dump
+
+# IDEs e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+EOF
+
+# 4) Re-inicialize o Git já com a branch 'main'
+git init -b main
+
+# (opcional: configure seu nome e e-mail globais, ajuste com seus dados)
+git config --global user.name "Seu Nome"
+git config --global user.email "seuemail@exemplo.com"
+
+# 5) Adicione apenas o que não é ignorado e faça o primeiro commit
+git add .
+git commit -m "Projeto inicial (Flask) + .gitignore"
+
+# 6) Conecte ao repositório remoto
+git remote add origin git@github.com:awlsoares/sistema_essencial_v1.git
+
+# 7) Envie sobrescrevendo o remoto (limpo, do zero)
+git push -u origin main --force
+
+
+---------------------------------------------------------------------
+
+Sempre que fizer mudanças no código:
+
+git add .
+git commit -m "Descrição da alteração"
+git push

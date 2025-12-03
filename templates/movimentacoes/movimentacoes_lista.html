@@ -1,0 +1,845 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+📊 Lista de Movimentações
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="cabecalho-projetos"> 
+        <h2 class="mb-4">📊 Lista de Movimentações</h2>
+        <div style="display: flex; gap: 10px" >
+            <a href="{{ url_for('movimentacoes.nova_movimentacao') }}" class="submenu-link">&#10133 Nova Movimentação</a>
+            <a href="{{ url_for('movimentacoes.nova_movimentacao_parcelada') }}" class="submenu-link">&#10133 Nova Movimentação Parcelada</a>
+        </div>
+    </div>
+
+    <!-- Resumos -->
+    <div class="resumos-container"> 
+        <div class="resumo-card-qtd-receitas qtdReceitas">
+            <h3>Entradas / Receitas
+                <!-- <div style="color: #000000; font-size: 16px;" id="resumo-qtdEntradasTotal">{{ qtdEntradasTotal }}</div> -->
+                <!-- <div style="color: #000000; font-size: 16px;" id="resumo-qtdEntradasReceitas">{{ qtdEntradasReceitas }}</div> -->
+                <div style="color: #000000; font-size: 16px;">
+                    <span id="resumo-qtdEntradasTotal">{{ qtdEntradasTotal }}</span>
+                    <span>/</span>
+                    <span id="resumo-qtdEntradasReceitas">{{ qtdEntradasReceitas }}</span>
+                </div>
+            </h3>
+        </div>
+
+        <div class="resumo-card entrada">
+            <h3>Receitas
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-receita">R$ {{ "%.2f"|format(total_receitas or 0) }}</div>
+            </h3>
+        </div>
+
+        <div class="resumo-card saida">
+            <h3>Despesas
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-despesa">R$ {{ "%.2f"|format(total_despesas or 0) }}</div>
+            </h3>
+        </div>
+
+        <div class="resumo-card lucro" id="card-saldo-anterior" style="display: none;">
+            <h3>Saldo Anterior <!-- <span style="color: #c7e908; font-size: 12px;">(Construção)</span> -->
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-saldo-anterior">R$ 0,00</div>
+            </h3>
+        </div>
+
+        <div class="resumo-card entrada" style="display: none;">
+            <h3>Entradas
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-entrada">R$ {{ "%.2f"|format(total_entradas or 0) }}</div>
+            </h3>
+        </div>
+
+        <div class="resumo-card saida" style="display: none;">
+            <h3>Saídas
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-saida">R$ {{ "%.2f"|format(total_saidas or 0) }}</div>
+            </h3>
+        </div>
+
+        <div class="resumo-card saldo" id="card-saldo">
+            <h3>Saldo
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-saldo">R$ {{ "%.2f"|format(saldo or 0) }}</div>
+            </h3>
+        </div>
+
+        <div class="resumo-card lucro" id="card-lucro-spl">
+            <h3>Lucro SPL
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-lucro-spl">R$ {{ "%.2f"|format(lucro_spl or 0) }}</div>
+            </h3>
+        </div>
+
+        <div class="resumo-card lucro" id="card-lucro-gpm">
+            <h3>Lucro GPM
+                <div style="color: #ffffff; font-size: 16px;" id="resumo-lucro-gpm">R$ {{ "%.2f"|format(lucro_gpm or 0) }}</div>
+            </h3>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <form class="filtros-form mb-4">
+        <div class="filtro-item">
+            <label for="filtro-data" class="form-label">Período</label>
+            <input type="month" id="filtro-data" class="form-control">
+        </div>
+
+        <div class="filtro-item">
+            <label for="filtro-operacao" class="form-label">Operação</label>
+            <select id="filtro-operacao" class="form-select">
+                <option value="">Todas</option>
+                <option value="Entrada">Entrada</option>
+                <option value="Saída">Saída</option>
+            </select>
+        </div>
+
+        <div class="filtro-item">
+            <label for="filtro-tipo" class="form-label">Tipo</label>
+            <select id="filtro-tipo" class="form-select">
+                <option value="">Todos</option>
+                {% for tipo in tipos %}
+                    <option value="{{ tipo }}">{{ tipo }}</option>
+                {% endfor %}       
+            </select>
+        </div>
+
+        <div class="filtro-item">
+            <label for="filtro-categoria" class="form-label">Categoria</label>
+            <select id="filtro-categoria" class="form-select">
+                <option value="">Todos</option>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria }}">{{ categoria }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filtro-item">
+            <label for="filtro-competencia" class="form-label">Competência</label>
+            <input type="month" id="filtro-competencia" class="form-control">
+        </div>
+
+        <!-- Botão limpar filtros -->
+        <div class="filtro-item" style="align-self: flex-end; width: 50px;">
+            <button type="button" class="btn btn-secondary" onclick="limparFiltrosMovimentacoes()">Limpar Filtros</button>
+        </div>
+
+        
+    </form>
+    <div style="display: flex; gap: 20px; justify-content: flex-end; margin-bottom: 10px;">
+            <!-- Botão RFB -->
+            <a href="{{ url_for('dados_rfb_dre.rfb_consolidado') }}" class="submenu-link">&#128214 RFB</a>
+            <!-- Botão DRE -->
+            <a href="{{ url_for('dados_rfb_dre.dre_fluxo') }}" class="submenu-link">&#128214 DRE</a>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Método</th>
+                    <th>Status</th>
+                    <th>Competência</th>
+                    <th>Tipo</th>
+                    <th>Categoria</th>
+                    <th>Entrada</th>
+                    <th>Saída</th>
+                    <!-- <th>Saldo</th> -->
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentacoes %}
+                <tr class="linha-movimentacao"
+                    data-operacao="{{ mov.operacao|lower }}"
+                    data-tipo="{{ mov.movimentacao_tipo|lower }}"
+                    data-categoria="{{ mov.movimentacao_categoria|lower }}"
+                    data-competencia="{{ mov.ano }}-{{ '%02d' % mov.mes }}"
+                    data-data="{{ mov.data.strftime('%Y-%m') }}"
+                    data-valor="{{ mov.valor }}"
+                    data-status="{{ mov.status_pagamento }}">
+
+                    <!-- Coluna Data -->
+                    <td>{{ mov.data.strftime('%d/%m/%Y') }}</td>
+
+                    <!-- Coluna Descrição -->
+                    <td class="coluna-scroll" style="text-align: left;">{{ mov.descricao }}</td> 
+
+                    <!-- Coluna Método -->
+                    <td>{{ mov.forma_de_pagamento }}</td>
+
+                    <!-- Coluna Status -->
+                    <!--<td>{{ mov.status_pagamento }}</td> -->
+                    
+                    {% set cor_fundo = "" %}
+                    
+                    {% if mov.status_pagamento in ["Pago", "Recebido"] %}
+                        {% set cor_fundo = "background-color: rgb(19, 189, 104);" %}   {# Verde #}
+                    {% elif mov.status_pagamento == "Aberto" %}
+                        {% if hoje > mov.data %}
+                            {% set cor_fundo = "background-color: #FF5252;" %} {# Vermelho #}
+                        {% elif hoje < mov.data %}
+                            {% set cor_fundo = "background-color: #FFEB3B;" %} {# Amarelo #}
+                        {% endif %}
+                    {% endif %}
+                    
+                    
+                        {% if mov.movimentacao_categoria != "Prestação de Serviço" %}
+                                <td style="cursor: pointer; text-align: center; {{ cor_fundo }}" title="Clique para Alterar Status." data-label="status_movimentacao" onclick="alterarStatusMovimentacao({{ mov.id }}, '{{ mov.operacao }}')">{{ mov.status_pagamento }}</td> 
+                        {% else %}
+                                <td style="text-align: center; {{ cor_fundo }}" title="Altere o Status em Contratos." data-label="status_movimentacao"> {{ mov.status_pagamento }}</td> 
+                        {% endif %}
+                    
+                    
+
+                    <!-- Coluna Competência -->
+                    <td>{{ '%02d' % mov.mes }}/{{ mov.ano }}</td>                   
+
+                    <!-- Coluna Tipo -->
+                    <td>{{ mov.movimentacao_tipo }}</td>
+
+                    <!-- Coluna Categoria -->
+                    <td>{{ mov.movimentacao_categoria }}</td>
+
+                    <!-- Coluna Entrada -->
+                    <td style="color: #007bff; text-align: center;">
+                        {% if mov.operacao == 'Entrada' %}
+                            {{ '%.2f'|format(mov.valor) }}
+                        {% endif %}
+                    </td>
+
+                    <!-- Coluna Saída -->
+                    <td style="color: #ff2a00; text-align: center;">
+                        {% if mov.operacao == 'Saída' %}
+                            {{ '%.2f'|format(mov.valor) }}
+                        {% endif %}
+                    </td>
+
+                    <!-- Coluna Saldo
+                    <td style="color: #ff2a00; text-align: center;">
+                        (&#128296)
+                    </td> -->
+
+                    <!-- Coluna Ações -->
+                    <!-- <td class="td-acoes">
+                        <a href="{{ url_for('movimentacoes.editar_movimentacao', id=mov.id) }}" 
+                        class="btn btn-sm btn-warning">✎</a>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="abrirModalExcluir({{ mov.id }})">
+                            🗑
+                        </button>
+                    </td> -->
+
+                    <td class="td-acoes">
+                    {% if mov.descricao[:3] == 'NF_' %}
+                        <span class="text-muted">-</span>
+                    {% else %}
+                        <a href="{{ url_for('movimentacoes.editar_movimentacao', id=mov.id) }}" class="btn btn-sm btn-warning" title="Editar">✎</a>
+                        <button type="button" class="btn btn-sm btn-warning"
+                            data-action="{{ url_for('movimentacoes.repetir_movimentacao', id=mov.id) }}"
+                            onclick="abrirModalRepetir(this, '{{ mov.descricao }}', '{{ mov.data.strftime('%Y-%m-%d') }}')"
+                            title="Duplicar">+</button>
+                        <!-- <button type="button" class="btn btn-sm btn-warning"
+                            onclick="{{ url_for('movimentacoes.repetir_movimentacao', qtd = 1, id=mov.id) }}" title="Duplicar">+</button> -->
+                        {% if mov.status_pagamento not in ["Pago", "Recebido"] %}
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                onclick="abrirModalExcluir({{ mov.id }})" title="Excluir"> 🗑 </button>
+                        {% endif %}   
+                    {% endif %}
+                </td>
+                </tr>
+                {% endfor %}
+                <!-- LINHA DE TOTAIS -->
+                <tr class="linha-totais bg-light border-top-3">
+                    <td colspan="7" class="text-end fw-bold">TOTAIS:</td>
+                    <td id="total-entradas-tabela"></td>
+                    <td id="total-saidas-tabela"></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modais (fora da tabela!) -->
+    {% for mov in movimentacoes %}
+    <div id="modal-{{ mov.id }}" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <p>Tem certeza que deseja excluir esta movimentação?</p>
+            <div class="modal-actions">
+                <form action="{{ url_for('movimentacoes.deletar_movimentacao', id=mov.id) }}" method="POST">
+                    <button type="submit" class="btn btn-secondary-confirm">Confirmar</button>
+                </form>
+                <button type="button" class="btn btn-secondary" onclick="fecharModalExcluir({{ mov.id }})">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Modal de Repetição -->
+    <div id="modal-repetir" class="modal">
+        <div class="modal-content">
+            <h4>🔁 Repetir Movimentação</h4>
+            <p id="descricao-mov"></p>
+
+            <!-- O formulário envolve todos os campos -->
+            <form id="form-repetir" method="POST">
+            <div style="text-align:left; margin-top:15px;">
+                <label for="data-repeticao">Data da próxima movimentação:</label><br>
+                <input type="date" id="data-repeticao" name="data-repeticao" class="form-control" style="margin-top:5px;" required>
+            </div>
+
+            <div style="text-align:left; margin-top:15px;">
+                <label for="qtd-repeticoes">Quantidade de repetições:</label><br>
+                <input type="number" id="qtd-repeticoes" name="qtd-repeticoes" class="form-control" value="1" min="1" style="margin-top:5px;" required>
+            </div>
+
+            <div class="modal-actions" style="margin-top:20px; text-align:center;">
+                <button type="submit" class="btn btn-secondary-confirm">Confirmar</button>
+                <button type="button" class="btn btn-secondary" onclick="fecharModalRepetir()">Cancelar</button>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Movimentação Parcelada
+    <div id="modal-parcelada" class="modal">
+        <div class="modal-content">
+            <h4>💳 Movimentação Parcelada</h4>
+
+            <form id="form-parcelada" method="POST" action="{{ url_for('movimentacoes.nova_movimentacao_parcelada') }}">
+                
+                <div style="text-align:left; margin-top:15px;">
+                    <label for="numero-parcelas">Número de parcelas:</label><br>
+                    <input type="number" id="numero-parcelas" name="numero_parcelas" class="form-control" value="1" min="1" style="margin-top:5px;" required>
+                </div>
+
+                <div style="text-align:left; margin-top:15px;">
+                    <label for="valor-bruto">Valor bruto total:</label><br>
+                    <input type="number" id="valor-bruto" name="valor_bruto" class="form-control" step="0.01" min="0" style="margin-top:5px;" required>
+                </div>
+
+                <div>Observação: Na próxima tela você detalhará a transação.</div>
+
+                <div class="modal-actions" style="margin-top:20px; text-align:center;">
+                    <button type="submit" class="btn btn-secondary-confirm">Confirmar</button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalParcelada()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div> -->
+
+    <!-- Contador de registros -->
+    <div class="mt-3 text-center" id="contador-registros">
+        <small class="text-muted">Carregando...</small>
+    </div>
+</div>
+
+<style>
+    .btn-secondary {
+        background-color: #3b4854;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        height: 40px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-secondary:hover {
+        background-color: #e41010;
+    }
+
+    .btn-secondary-confirm {
+        background-color: #3b4854;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        height: 40px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-secondary-confirm:hover {
+        background-color: #20af3f;
+    }
+
+    .table th, 
+    .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Cabeçalho */
+    .cabecalho-projetos{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:1rem;
+    }
+    .submenu-link{
+        text-decoration:none;
+        padding:.5rem .75rem;
+        border-radius:6px;
+        background:#007bff;
+        color:#fff;
+    }
+
+    /* Container dos filtros */
+    .filtros-form {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .filtro-item {
+        text-align: center;
+        align-items: center;
+        flex: 1;
+        min-width: 100px;
+        display: flex;
+        flex-direction: column;
+    }
+    .filtro-item select,
+    .filtro-item input {
+        padding: 0.4rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+    }
+
+    /* Cards de resumo */
+    .resumos-container {
+        display: flex;
+        justify-content: center;
+        gap: 3px;
+        margin: 5px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        background-color: #3b4854;
+        border-radius: 10px;
+        padding: 15px;
+        font-size: 12px;
+    }
+
+    .resumo-card {
+        width: 90px;
+        height: 45px;
+        margin: 0 5px;
+        padding: 1rem;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: background-color 0.3s;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .resumo-card-qtd-receitas {
+        font-size: 12px;
+        width: 100px;
+        height: 45px;
+        margin: 0 10px;
+        padding: 1rem;
+        border-radius: 100px;
+        color: rgb(34, 60, 225);
+        text-align: center;
+        background-color: #bbc5dc;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: background-color 0.3s;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }    
+
+    .resumo-card.entrada { background-color: #58ca7e; }
+    .resumo-card.saida { background-color: #e36a76; }
+    .resumo-card.saldo { background-color: #007bff; }
+    .resumo-card.lucro { background-color: #007bff; border-radius: 100px;}
+
+    /* Ações */
+    .td-acoes {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Modal */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 1000;
+    }
+
+    .modal.mostrar {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transform: translateY(-30px);
+        transition: transform 0.3s ease;
+    }
+
+    .modal.mostrar .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    /* Barra de Rolagem na célula que estiver muitos caracteres horizontalmente */
+    .coluna-scroll {
+    max-width: 180px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 8px 4px;
+    }
+
+    /* Para melhorar a aparência da barra de scroll */
+    .coluna-scroll::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .coluna-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 2px;
+    }
+
+    .coluna-scroll::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 2px;
+    }
+
+    .coluna-scroll::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+
+</style>
+
+<script>
+    /* Util: normaliza string para comparar sem acentos */
+    function norm(s){
+        return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    }
+
+    // mostra modal de exclusão pelo id (ex: modal-123)
+    function abrirModalExcluir(id) {
+        console.log('abrirModalExcluir chamado com id=', id); // ajuda no debug
+        const el = document.getElementById("modal-" + id);
+        if (!el) {
+            console.warn('Modal não encontrado:', "modal-" + id);
+            return;
+        }
+        el.classList.add('mostrar');
+    }
+
+    // fecha modal de exclusão pelo id
+    function fecharModalExcluir(id) {
+        console.log('fecharModalExcluir chamado com id=', id);
+        const el = document.getElementById("modal-" + id);
+        if (!el) return;
+        el.classList.remove('mostrar');
+    }
+
+    function atualizarSaldoCard(saldo) {
+        var cardSaldo = document.getElementById('card-saldo');
+        if (!cardSaldo) return;
+        cardSaldo.style.backgroundColor = saldo > 0 ? '#58ca7e' : '#e36a76';
+    }
+
+    // === FUNÇÃO PARA CALCULAR SALDO ANTERIOR ===
+    function calcularSaldoAnterior() {
+        var dataFiltro = document.getElementById('filtro-data')?.value || '';
+
+        if (!dataFiltro) {
+            document.getElementById('resumo-saldo-anterior').textContent = 'R$ 0,00';
+            return 0;
+        }
+
+        var [anoFiltro, mesFiltro] = dataFiltro.split('-').map(Number);
+        var mesAnterior = mesFiltro - 1;
+        var anoAnterior = anoFiltro;
+
+        if (mesAnterior === 0) {
+            mesAnterior = 12;
+            anoAnterior = anoFiltro - 1;
+        }
+
+        var dataLimite = new Date(anoFiltro, mesFiltro - 1, 0);
+
+        // var saldoAnterior = 100; // ########### ATUALIZAR SALDO INICIAL DO SISTEMA #########
+        var saldoAnterior = 0; // ########### ATUALIZAR SALDO INICIAL DO SISTEMA #########
+
+        var linhas = document.querySelectorAll('.linha-movimentacao');
+
+        linhas.forEach(function (linha) {
+            var dataMov = linha.getAttribute('data-data');
+            var [anoMov, mesMov] = dataMov.split('-').map(Number);
+            var dataMoveObj = new Date(anoMov, mesMov - 1, 1);
+
+            if (dataMoveObj <= dataLimite) {
+                var valorStr = linha.getAttribute('data-valor') || "0";
+                var valor = parseFloat(valorStr.toString().replace(",", ".")) || 0;
+                var operacao = norm(linha.getAttribute('data-operacao'));
+                var status_operacao = norm(linha.getAttribute('data-status'));
+
+                // A verificação abaixo atualiza os cards saldo atual e anterior somente com as operações efetivadas (pagas ou recebidas).
+                if (status_operacao != 'aberto' && status_operacao != 'cancelado') {
+                    if (operacao === 'entrada') {
+                        saldoAnterior += valor;
+                    } else if (operacao === 'saida') {
+                        saldoAnterior -= valor;
+                    }
+                }
+            }
+        });
+
+        var fmt = { style: 'currency', currency: 'BRL' };
+        document.getElementById('resumo-saldo-anterior').textContent = saldoAnterior.toLocaleString('pt-BR', fmt);
+        return saldoAnterior;
+    }
+
+    // === FUNÇÃO PARA MOSTRAR/OCULTAR CARD SALDO ANTERIOR ===
+    function atualizarVisibilidadeSaldoAnterior() {
+        var dataFiltro = document.getElementById('filtro-data')?.value || '';
+        var cardSaldoAnterior = document.getElementById('card-saldo-anterior');
+
+        if (dataFiltro) {
+            cardSaldoAnterior.style.display = 'flex';
+        } else {
+            cardSaldoAnterior.style.display = 'none';
+        }
+    }
+
+    // === FILTROS ===
+    function aplicarFiltros() {
+        var operacao = document.getElementById('filtro-operacao')?.value || '';
+        var tipo = document.getElementById('filtro-tipo')?.value || '';
+        var competencia = document.getElementById('filtro-competencia')?.value || '';
+        var dataFiltro = document.getElementById('filtro-data')?.value || '';
+        var categoria = document.getElementById('filtro-categoria')?.value || '';
+
+        var linhas = document.querySelectorAll('.linha-movimentacao');
+        var linhasVisiveis = 0;
+        
+        linhas.forEach(function (linha) {
+            var mostrar = true;
+
+            // Verifica cada filtro
+            if (operacao && norm(linha.getAttribute('data-operacao')) !== norm(operacao)) {
+                mostrar = false;
+            }
+            if (tipo && !norm(linha.getAttribute('data-tipo')).includes(norm(tipo))) {
+                mostrar = false;
+            }
+            if (categoria && !norm(linha.getAttribute('data-categoria')).includes(norm(categoria))) {
+                mostrar = false;
+            }
+            if (competencia && linha.getAttribute('data-competencia') !== competencia) {
+                mostrar = false;
+            }
+            if (dataFiltro && linha.getAttribute('data-data') !== dataFiltro) {
+                mostrar = false;
+            }
+
+            // Mostra ou esconde a linha
+            linha.style.display = mostrar ? '' : 'none';
+            if (mostrar) linhasVisiveis++;
+        });
+
+        atualizarContadorRegistros(linhasVisiveis);
+        calcularResumos();
+    }
+
+    // === RESUMOS ===
+    function calcularResumos() {
+        var linhasVisiveis = Array.from(document.querySelectorAll('.linha-movimentacao'))
+            .filter(linha => linha.style.display !== 'none');
+
+        var entrada = 0;
+        var receitas = 0;
+        var saida = 0;
+        var despesas = 0;
+        var qtdEntradasTotal = 0;
+        var qtdEntradasReceitas = 0;
+        var lucro_spl = 0;
+        var lucro_gpm = 0;
+
+        // var saldo_inicial = 14926.09; // ########### ATUALIZAR SALDO INICIAL DO SISTEMA #########
+        var saldo_inicial = 0; // ########### ATUALIZAR SALDO INICIAL DO SISTEMA #########
+
+        var entradasEfetivas = 0;  // Só entradas com status "recebido"
+        var saidasEfetivas = 0;    // Só saídas com status "pago"
+
+        var saldoAnterior = calcularSaldoAnterior();
+
+        linhasVisiveis.forEach(function (linha) {
+            var valorStr = linha.getAttribute('data-valor') || "0";
+            var valor = parseFloat(valorStr.toString().replace(",", ".")) || 0;
+            var operacao = norm(linha.getAttribute('data-operacao'));
+            var tipo = norm(linha.getAttribute('data-tipo'));
+            var categoria = norm(linha.getAttribute('data-categoria'));
+            var status = norm(linha.getAttribute('data-status'));
+
+            if (operacao === 'entrada') entrada += valor;
+            if (operacao === 'entrada') qtdEntradasTotal += 1;
+            if (operacao === 'saida') saida += valor;
+            if (tipo === 'receita' && status === 'recebido') qtdEntradasReceitas += 1;
+            if (tipo === 'receita' && status === 'recebido') receitas += valor;
+            if (tipo === 'despesa' && status === 'pago') despesas += valor;
+            if (categoria === 'spl' && status === 'pago') lucro_spl += valor;
+            if (categoria === 'gpm' && status === 'pago') lucro_gpm += valor;
+
+            // *** ALTERAÇÃO 2: Cálculo das entradas e saídas efetivas para o saldo ***
+            if (operacao === 'entrada' && status === 'recebido') {
+                entradasEfetivas += valor;
+            }
+            if (operacao === 'saida' && status === 'pago') {
+                saidasEfetivas += valor;
+            }
+        });
+
+        var dataFiltro = document.getElementById('filtro-data')?.value || '';
+
+        // *** ALTERAÇÃO 3: Saldo calculado com entradas/saídas efetivas ***
+        var saldo = dataFiltro ? 
+        saldoAnterior + entradasEfetivas - saidasEfetivas : 
+        saldo_inicial + entradasEfetivas - saidasEfetivas;
+
+        // var saldo = dataFiltro ? saldoAnterior + entrada - saida : saldo_inicial + entrada - saida;
+
+        var fmt = { style: 'currency', currency: 'BRL' };
+        document.getElementById('resumo-entrada').textContent = entrada.toLocaleString('pt-BR', fmt);
+        document.getElementById('resumo-saida').textContent = saida.toLocaleString('pt-BR', fmt);
+        document.getElementById('resumo-saldo').textContent = saldo.toLocaleString('pt-BR', fmt);
+        document.getElementById('resumo-qtdEntradasReceitas').textContent = qtdEntradasReceitas;
+        document.getElementById('resumo-qtdEntradasTotal').textContent = qtdEntradasTotal;
+        document.getElementById('resumo-receita').textContent = receitas.toLocaleString('pt-BR', fmt);
+        document.getElementById('resumo-despesa').textContent = despesas.toLocaleString('pt-BR', fmt);
+        document.getElementById('resumo-lucro-spl').textContent = lucro_spl.toLocaleString('pt-BR', fmt);
+        document.getElementById('resumo-lucro-gpm').textContent = lucro_gpm.toLocaleString('pt-BR', fmt);
+
+        atualizarSaldoCard(saldo);
+        atualizarTotaisTabela();
+    }
+
+    // === CONTADOR DE REGISTROS ===
+    function atualizarContadorRegistros(quantidade) {
+        var contadorDiv = document.getElementById('contador-registros');
+        
+        if (quantidade > 0) {
+            contadorDiv.innerHTML = `<small class="text-muted">Mostrando ${quantidade} registro(s)</small>`;
+        } else {
+            contadorDiv.innerHTML = '<small class="text-muted">Nenhum registro encontrado</small>';
+        }
+    }
+
+    // === EVENTOS DOS FILTROS ===
+    document.getElementById('filtro-operacao')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtro-tipo')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtro-competencia')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtro-categoria')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtro-data')?.addEventListener('change', function() {
+        atualizarVisibilidadeSaldoAnterior();
+        aplicarFiltros();
+    });
+
+    // === LIMPAR FILTROS ===
+    function limparFiltrosMovimentacoes() {
+        document.getElementById('filtro-operacao').value = '';
+        document.getElementById('filtro-tipo').value = '';
+        document.getElementById('filtro-competencia').value = '';
+        document.getElementById('filtro-data').value = '';
+        document.getElementById('filtro-categoria').value = '';
+
+        atualizarVisibilidadeSaldoAnterior();
+        aplicarFiltros();
+    }
+
+    // === FUNÇÃO PARA ATUALIZAR TOTAIS DA TABELA ===
+    function atualizarTotaisTabela() {
+        // Pega os valores que já estão calculados nos cards
+        const valorEntrada = document.getElementById('resumo-entrada').textContent;
+        const valorSaida = document.getElementById('resumo-saida').textContent;
+        
+        // Copia para a tabela
+        document.getElementById('total-entradas-tabela').textContent = valorEntrada;
+        document.getElementById('total-saidas-tabela').textContent = valorSaida;
+    }
+
+
+     // === INICIALIZAÇÃO ===
+    window.onload = function () {
+        // Conta todas as linhas iniciais
+        var todasLinhas = document.querySelectorAll('.linha-movimentacao');
+        atualizarContadorRegistros(todasLinhas.length);
+        
+        atualizarVisibilidadeSaldoAnterior();
+        calcularResumos();
+    };
+
+    
+    function abrirModalRepetir(btn, descricao, dataMovStr) {
+        const modal = document.getElementById('modal-repetir');
+        const descElem = document.getElementById('descricao-mov');
+        const inputData = document.getElementById('data-repeticao');
+        const form = document.getElementById('form-repetir');
+
+        descElem.textContent = `Descrição: ${descricao}`;
+
+        // soma 1 mês de forma segura
+        const dataOriginal = new Date(dataMovStr + 'T00:00:00');
+        dataOriginal.setMonth(dataOriginal.getMonth() + 1);
+        const proxData = new Date(dataOriginal.getFullYear(), dataOriginal.getMonth(), Math.min(28, dataOriginal.getDate()));
+        inputData.value = proxData.toISOString().split('T')[0];
+
+        // usa a URL gerada no template (sempre correta)
+        form.action = btn.dataset.action;
+
+        modal.classList.add('mostrar');
+    }
+
+    function fecharModalRepetir() {
+        const modal = document.getElementById('modal-repetir');
+        modal.classList.remove('mostrar');
+    }
+
+    // function abrirModalParcelada() {
+    //     document.getElementById('modal-parcelada').style.display = 'block';
+    // }
+    // function fecharModalParcelada() {
+    //     document.getElementById('modal-parcelada').style.display = 'none';
+    // }
+
+</script>
+
+{% endblock %}

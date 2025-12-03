@@ -1,0 +1,300 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+📊 Relatório Consolidado RFB
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="filtros-container">
+        <h2 class="mb-4">📊 Relatório Consolidado RFB</h2>
+        
+        <!-- Filtro de Ano -->
+        <div class="filtro-ano-container mb-4">
+            <div class="filtro-item">
+                <label for="select-ano" class="form-label">Selecionar Ano:</label>
+                <select id="select-ano" class="form-select" onchange="alterarAno()">
+                    {% for ano in anos_disponiveis %}
+                    <option value="{{ ano }}" {% if ano == ano_selecionado %}selected{% endif %}>
+                        {{ ano }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 20px;">
+            <a href="{{ url_for('dados_rfb_dre.dre_fluxo') }}" class="submenu-link-bottom">&#128214 DRE</a>
+            <a href="{{ url_for('movimentacoes.listar_movimentacoes') }}" class="submenu-link-bottom">← Voltar</a>
+        </div>
+    </div>  
+
+    <!-- Tabela Consolidada -->
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr style="text-align: center;">
+                    <th style="width: 160px;">Tipo de Conta</th>
+                    {% for mes in meses %}
+                        <th class="text-center">{{ mes }}</th>
+                    {% endfor %}
+                    <th class="text-center bg-warning">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linha NFs Emitidas -->
+                <tr class="linha-nf-emitidas">
+                    <td class="fw-bold text-info" style="text-align: left; color: #198754; font-weight: bold;">Faturamento Bruto</td>
+                    {% for valor in dados_consolidados['nf_emitidas'] %}
+                    <td class="text-center valor-nf-emitidas">
+                        {% if valor > 0 %}
+                            R$ {{ "%.2f"|format(valor) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="text-center fw-bold bg-warning" id="total-nf-emitidas" style="text-align: center; color: #198754;">
+                        R$ {{ "%.2f"|format(dados_consolidados['nf_emitidas']|sum) }}
+                    </td>
+                </tr>
+
+                <!-- Linha NFs Recebidas -->
+                <tr class="linha-nf-recebidas">
+                    <td class="fw-bold text-success" style="text-align: left; color: #198754; font-weight: bold;">Recebimento</td>
+                    {% for valor in dados_consolidados['nf_recebidas'] %}
+                    <td class="text-center valor-nf-recebidas">
+                        {% if valor > 0 %}
+                            R$ {{ "%.2f"|format(valor) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="text-center fw-bold bg-warning" id="total-nf-recebidas" style="text-align: center; color: #198754;">
+                        R$ {{ "%.2f"|format(dados_consolidados['nf_recebidas']|sum) }}
+                    </td>
+                </tr>
+
+                <!-- Linha Despesas -->
+                <tr class="linha-despesas">
+                    <td class="fw-bold text-danger" style="text-align: left; color: red; font-weight: bold;">Despesas Totais</td>
+                    {% for valor in dados_consolidados['despesas'] %}
+                    <td class="text-center valor-despesa" style="color: red;">
+                        {% if valor > 0 %}
+                            R$ {{ "%.2f"|format(valor) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="text-center fw-bold bg-warning" id="total-despesas" style="text-align: center; color: red;">
+                        R$ {{ "%.2f"|format(dados_consolidados['despesas']|sum) }}
+                    </td>
+                </tr>
+
+                <!-- Linha Lucro SPL -->
+                <tr class="linha-lucro-spl">
+                    <td class="fw-bold text-primary" style="text-align: left; font-weight: bold; color: #0d6efd;">Distribuição de Lucro (SPL)</td>
+                    {% for valor in dados_consolidados['lucro_spl'] %}
+                    <td class="text-center valor-lucro-spl">
+                        {% if valor > 0 %}
+                            R$ {{ "%.2f"|format(valor) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="text-center fw-bold bg-warning" id="total-lucro-spl" style="text-align: center; color: #0d6efd;">
+                        R$ {{ "%.2f"|format(dados_consolidados['lucro_spl']|sum) }}
+                    </td>
+                </tr>
+
+                <!-- Linha Lucro GPM -->
+                <tr class="linha-lucro-gpm">
+                    <td class="fw-bold text-success" style="text-align: left; font-weight: bold; color: #0d6efd;">Distribuição de Lucro (GPM)</td>
+                    {% for valor in dados_consolidados['lucro_gpm'] %}
+                    <td class="text-center valor-lucro-gpm">
+                        {% if valor > 0 %}
+                            R$ {{ "%.2f"|format(valor) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="text-center fw-bold bg-warning" id="total-lucro-gpm" style="text-align: center; color: #0d6efd;">
+                        R$ {{ "%.2f"|format(dados_consolidados['lucro_gpm']|sum) }}
+                    </td>
+                </tr>
+
+                <!-- Linha Reserva Sócias -->
+                <tr class="linha-investimento-reserva">
+                    <td class="fw-bold text-success" style="text-align: left; color: red; font-weight: bold;">Investimentos (Reserva)</td>
+                    {% for valor in dados_consolidados['investimento_reserva'] %}
+                    <td class="text-center valor-investimento-reserva" style="text-align: center; color: red;">
+                        {% if valor > 0 %}
+                            R$ {{ "%.2f"|format(valor) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="text-center fw-bold bg-warning" id="total-investimento-reserva" style="text-align: center; color: red;">
+                        R$ {{ "%.2f"|format(dados_consolidados['investimento_reserva']|sum) }}
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    
+</div>
+
+<style>
+    .filtros-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+
+    .controles-direita {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    /* .submenu-link {
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        background: #007bff;
+        color: #fff;
+        white-space: nowrap;
+        height: fit-content;
+    }
+
+    .submenu-link:hover {
+        background: #0056b3;
+        color: #fff;
+        text-decoration: none;
+    } */
+
+    .submenu-link-bottom{
+        text-decoration:none;
+        padding:.5rem .75rem;
+        border-radius:6px;
+        background:#007bff;
+        color:#fff;
+    }
+
+    .filtro-ano-container {
+        background-color: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        margin-bottom: 0;
+    }
+
+    .filtro-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filtro-item label {
+        margin: 0;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .filtro-item select {
+        width: 120px;
+    }
+
+    .table th {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+        text-align: center;
+    }
+
+    .table td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+
+    .resumo-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .card {
+        text-align: center;
+    }
+
+    .valor-nf-emitidas {
+        color: #198754!important;
+        font-weight: 500;
+    }
+
+    .valor-nf-recebidas {
+        color: #198754 !important;
+        font-weight: 500;
+    }
+
+    .valor-despesa {
+        color: red !important;
+        font-weight: 500;
+    }
+
+    .valor-lucro-spl {
+        color: #0d6efd !important;
+        font-weight: 500;
+    }
+
+    .valor-lucro-gpm {
+        color: #0d6efd !important;
+        font-weight: 500;
+    }
+
+    .saldo-mensal .text-success {
+        font-weight: bold;
+    }
+
+    .saldo-mensal .text-danger {
+        font-weight: bold;
+    }
+
+    /* Responsividade para telas menores */
+    @media (max-width: 768px) {
+        .filtros-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .controles-direita {
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .filtro-item select {
+            width: 150px;
+        }
+    }
+</style>
+
+ 
+<script>
+    function alterarAno() {
+        const anoSelecionado = document.getElementById('select-ano').value;
+        // Recarrega a página com o novo ano
+        window.location.href = `{{ url_for('dados_rfb_dre.rfb_consolidado') }}?ano=${anoSelecionado}`;
+    }
+</script>
+
+{% endblock %}

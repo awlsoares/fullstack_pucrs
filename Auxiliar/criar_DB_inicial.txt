@@ -1,0 +1,14 @@
+Alternativa segura: Deletar migrações e gerar uma nova baseada no modelo atual
+Se você estiver em um ambiente de desenvolvimento e puder recriar o banco, essa abordagem limpa tudo:
+
+1) Excluir a pasta migrations/ (ou apenas o conteúdo de migrations/versions/).
+
+2) Apagar o banco de dados (ou a tabela) manualmente no PostgreSQL.
+
+3) Recriar o banco (se necessário).
+
+Rodar:
+
+flask db init
+flask db migrate -m "Migração inicial do banco de dados"
+flask db upgrade

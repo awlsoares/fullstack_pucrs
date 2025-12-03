@@ -1,0 +1,42 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    Essencial Consultoria
+{% endblock %}
+
+{% block content %}
+    
+    <h1 style="text-align: center; margin-top: 40px;">
+        Bem-vindo à Essencial Consultoria e Projetos
+    </h1>
+            
+    <!-- Imagem do static/image -->
+    <div style="display: flex; justify-content: center; align-items: center; height: 80vh;">
+        <img src="{{ url_for('static', filename='image/logo_essencial.jpeg') }}" 
+             alt="Logotipo da Essencial Consultoria." 
+             style="max-width: 500px; height: auto;">
+    </div>
+
+    <!-- Div para data e hora -->
+    <div id="datetime" style="
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    font-size: 16px;
+    color: #555;
+    "></div>
+
+    <!-- Script para atualizar data e hora dinamicamente -->
+    <script>
+    function updateDateTime() {
+    const now = new Date();
+    const formatted = now.toLocaleString(); // formato local
+    document.getElementById('datetime').textContent = formatted;
+    }
+
+    // Atualiza imediatamente e depois a cada segundo
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    </script>
+
+{% endblock %}

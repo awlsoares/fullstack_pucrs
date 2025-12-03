@@ -1,0 +1,294 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  Lista de Propostas
+{% endblock %}
+ 
+{% block content %}
+ 
+<div id="conteudo-projetos">
+  <div class="cabecalho-projetos">
+    <h2>&#128214 Lista de Propostas</h2>
+    <div class="filtros-container">
+      <form method="get" action="{{ url_for('propostas.listar_propostas') }}" style="max-width: 600px; display: flex; gap: 20px;">
+        
+          <div>
+            <label for="status_nome">&#128270 Satus:</label>
+            <select name="status_nome" onchange="this.form.submit()">
+                <option value="">Todos</option>
+                <option value="Aprovado" {% if status_nome == "Aprovado" %}selected{% endif %}>Aprovado</option>
+                <option value="Aguardando Aprovação" {% if status_nome == "Aguardando Aprovação" %}selected{% endif %}>Aguardando Aprovação</option>
+                <option value="Reprovado" {% if status_nome == "Reprovado" %}selected{% endif %}>Reprovado</option>
+                <option value="Cancelado" {% if status_nome == "Cancelado" %}selected{% endif %}>Cancelado</option>
+            </select> 
+          </div>
+
+          <div>
+            <label for="cliente_id">&#128270 Cliente:</label>
+            <select name="cliente_id" onchange="this.form.submit()">
+                <option value="">Todos</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}" {% if cliente_id and cliente.id == cliente_id|int %}selected{% endif %}>
+                        {{ cliente.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+          </div>
+        
+      </form>
+      <a href="{{ url_for('propostas.nova_proposta') }}" class="submenu-link">&#10133 Nova Proposta</a>
+      <a href="{{ url_for('ajuda.propostas') }}" class="submenu-link">❓Ajuda</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <table border="1" cellpadding="5" cellspacing="0" id="tabelaPropostas">
+    <thead>
+      <tr>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(0, this)">✔<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(1, this)">Envio<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(2, this)">Cliente <span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(3, this)">Escopo <span></span></th>        
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(4, this)">Assinatura (R$) <span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(5, this)">Protocolo (R$) <span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(6, this)">Conclusão (R$) <span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(7, this)">Total (R$) <span></span></th>
+        <th style="cursor: pointer; text-align: center;" title="Permite múltiplos contratos? S/N" onclick="ordenarTabelaProposta(8, this)">M<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(9, this)">Proposta<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(10, this)">Contrato<span></span></th>
+        <th style="text-align: center;">+<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(11, this)">Observação<span></span></th>
+        </tr>
+    </thead>
+    <tbody>  
+      {% for proposta in propostas %} 
+        {% if proposta.status_proposta != "?Cancelado" %} <!--  TIRAR A "?" de "?Cancelado"PARA NÃO MOSTRAR AS PROPOSTAS CANCELADAS.  -->
+          <tr {% if proposta.status_proposta in ["Cancelado", "Reprovado"] %} style="text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: red; color: black;" {% endif %}>
+            <!-- <td style="text-align: center;" data-label="Status" {% if proposta.status_proposta != "Cancelado" and not proposta.contratos %} onclick="abrirModalProposta({{ proposta.id }})" {% endif %}> -->
+            <td data-label="Status" {% if proposta.status_proposta == "Cancelado" or proposta.contratos %} style="text-align: center; cursor: default" 
+                {% else %} style="text-align: center;" onclick="abrirModalProposta({{ proposta.id }})" {% endif %}>
+              {% if proposta.status_proposta == "Reprovado" %}
+                  <span style="color: red; font-size: 14px;" title="Proposta REPROVADA.">&#9679;</span>
+                  <span style="display: none;">Reprovado</span>
+              {% elif proposta.status_proposta == "Aprovado" %}
+                  <span style="color: rgb(19, 189, 104); font-size: 14px;" title="Proposta APROVADA.">&#9679;</span>
+                  <span style="display: none;">Aprovado</span>
+              {% elif proposta.status_proposta == "Aguardando Aprovação" %}
+                  <span style="color: orange; font-size: 14px;" title="Aguardando Aprovação.">&#9679;</span>
+                  <span style="display: none;">Aguardando Aprovação</span>
+              {% elif proposta.status_proposta == "Cancelado" %}
+                  <span style="color: black; font-size: 14px;" title="Proposta CANCELADA.">&#9679;</span>
+                  <span style="display: none;">Proposta CANCELADA.</span>
+              {% endif %} 
+            </td>
+            <td style="text-align: center;" data-label="Envio">{{ proposta.data_envio.strftime("%d/%m/%y") }}</td>
+            <td style="text-align: center;" data-label="Cliente">{{ proposta.cliente.nome }}</td>
+            <td data-label="Descrição" class="Escopo">{{ proposta.escopo }}</td>
+            <td style="text-align: center;" data-label="Assinatura (R$)">{{ "%.2f"|format(proposta.valor_assinatura) }}</td>
+            <td style="text-align: center;" data-label="Protocolo (R$)">{{ "%.2f"|format(proposta.valor_protocolo) }}</td>          
+            <td style="text-align: center;" data-label="Aprovação (R$)">{{ "%.2f"|format(proposta.valor_conclusao) }}</td>
+            <td style="text-align: center;" data-label="Total (R$)">{{ "%.2f"|format(proposta.valor_assinatura + proposta.valor_protocolo + proposta.valor_conclusao) }}</td>
+            <td style="text-align: center;" data-label="Múltiplas Propostas"
+              title= {% if proposta.contratos_multiplos %}"Permite contratos múltiplos"{% else %}
+                "Permite apenas 1 contrato."{% endif %}>
+              {% if proposta.contratos_multiplos %} S {% else %} N {% endif %}</td>
+
+            {% if proposta.status_proposta == "Aguardando Aprovação" %}       
+              <td style="text-align: center; cursor: pointer; color: blue;" data-label="numero_proposta" title="Editar Proposta." class="num_proposta" onclick="abrirFormularioEdicaoProposta({{ proposta.id }})">{{ proposta.numero_proposta }}</td>
+            {% else %}
+              <td style="text-align: center;" data-label="numero_proposta">{{ proposta.numero_proposta }}</td>
+            {% endif %} 
+
+            {% if not proposta.contratos and proposta.status_proposta == "Aprovado" %}
+              <td style="text-align: center; cursor: pointer;" data-label="numero_contrato" onclick="criarContrato({{ proposta.id }})" title="Criar Contrato.">
+                &#10133
+              </td>
+            {% elif proposta.contratos and proposta.status_proposta == "Aprovado" %}
+              <td style="text-align: center;" data-label="numero_contrato">
+                {% for contrato in proposta.contratos %}
+                  <!-- <span style="cursor: pointer; color: blue;" onclick="abrirFormularioEdicaoContrato({{ contrato.id }})" title="Editar Contrato."> -->
+                  <span style="text-align: center;">{{ contrato.numero_contrato }}</span><br>
+                {% endfor %}
+              </td>
+            {% else %}
+              <td style="text-align: center;" data-label="numero_contrato">---</td>
+            {% endif %}
+            
+            {% if proposta.contratos_multiplos == True %}
+              <td style="text-align: center; cursor: pointer;" data-label="numero_contrato" onclick="abrirModalDuplicar({{ proposta.id }})" title="Duplicar Contrato.">&#10133</td>
+            {% else %}
+              <td style="text-align: center;" data-label="numero_contrato">---</td>
+            {% endif %}
+
+            <td data-label="Observação" class="Escopo">{{ proposta.observacao }}</td>
+
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="text-align: left; padding-top: 10px;">
+      <span style="color: black; font-size: 14px;">Legenda: </span>
+      <span style="color: rgb(19, 189, 104); font-size: 14px;">&#9679; Aprovado</span>
+      <span style="color: orange; font-size: 14px;">&#9679; Aguardando Aprovação</span>
+      <span style="color: red; font-size: 14px;">&#9679; Reprovado </span>
+      <span style="color: black; font-size: 14px;">&#9679; Cancelado </span>
+  </div>
+</div>
+
+<!-- Modal para seleção de status -->
+<div id="statusModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="fecharModalProposta()">&times;</span>
+    <h3>Selecione o novo status:</h3>
+    <br>
+   <form id="statusForm">
+        
+        <label style="color: red;">
+            <input type="radio" name="status" value="Reprovado">
+            <span style="color: red; margin-right: 5px;">&#9679;</span> Reprovado
+        </label><br>
+        
+        <label style="color: rgb(19, 189, 104);">
+            <input type="radio" name="status" value="Aprovado">
+            <span style="color: rgb(19, 189, 104); margin-right: 5px;">&#9679; </span> Aprovado
+        </label><br>
+        
+        <label style="color: orange;">
+            <input type="radio" name="status" value="Aguardando Aprovação">
+            <span style="color: orange; margin-right: 5px;">&#9679;</span> Aguardando Aprovação
+        </label><br>
+
+        <label style="color: black;">
+            <input type="radio" name="status" value="Cancelado">
+            <span style="color: black; margin-right: 5px;">&#9679;</span> Cancelar Proposta
+        </label>
+    
+        <br><br>
+      
+        <button type="button" onclick=" confirmarStatusProposta()">OK</button>
+        <button type="button" onclick="fecharModalProposta()">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para duplicar contrato -->
+<div id="modalDuplicar" class="modal">
+  <div class="modal-content">
+    <p>Deseja realmente duplicar o contrato mais recente desta proposta?</p>
+    <div class="modal-actions">
+      <form id="formDuplicar" method="POST">
+        <button type="submit" class="btn btn-secondary-confirm">Confirmar</button>
+      </form>
+      <button type="button" class="btn btn-secondary" onclick="fecharModalDuplicar()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Estilo básico para o modal -->
+  <style>
+    /* Estilo para a legenda */
+    .legenda {
+      text-align: left;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    
+    .legenda span {
+      margin-right: 15px;
+      font-weight: bold;
+    }
+    
+    /* Estilo do modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto; /* Posiciona o modal mais próximo ao topo */
+      padding: 20px;
+      border-radius: 8px;
+      width: 15%; /* Reduz o tamanho do modal */
+      text-align: center; /* Alinha o conteúdo à esquerda */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-content h3 {
+      margin: 0 0 15px;
+      font-size: 18px;
+      text-align: center; /* Ajusta o tamanho da fonte para o título */
+    }
+    
+    .modal-content label {
+      display: flex; /* Permite alinhamento horizontal dos botões de rádio e texto */
+      align-items: center;
+      margin-bottom: 10px; /* Espaçamento entre os itens */
+      margin-left: 30px;
+      font-size: 14px; /* Ajusta o tamanho da fonte */
+    }
+    
+    .modal-content input[type="radio"] {
+      margin-right: 10px; /* Espaço entre o botão de rádio e o texto */
+    }
+    
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .close:hover {
+      color: #000;
+    }
+    
+    /* Botões no modal */
+    .modal-content button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: #fff;
+    }
+    
+    .modal-content button:hover {
+      background-color: #0056b3;
+    }
+    
+    .modal-content button:nth-child(2) {
+      background-color: #6c757d;
+    }
+    
+    .modal-content button:nth-child(2):hover {
+      background-color: #5a6268;
+    }
+  </style>
+
+<script>
+  function abrirModalDuplicar(proposta_id) {
+      const modal = document.getElementById("modalDuplicar");
+      const form = document.getElementById("formDuplicar");
+      form.action = `/duplicar_contrato/${proposta_id}`;
+      modal.style.display = "block";
+  }
+
+  function fecharModalDuplicar() {
+      document.getElementById("modalDuplicar").style.display = "none";
+  }
+</script>
+{% endblock %}
