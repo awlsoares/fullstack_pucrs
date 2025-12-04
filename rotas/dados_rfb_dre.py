@@ -585,6 +585,8 @@ def dre_fluxo():
             # 9. CAIXA ANTES DA RESERVA
             # -----------------------------
             caixa_antes_reserva = saldo_inicial + dados_consolidados['saldo_caixa_fluxo'][i]
+            print(
+                f">>>>>> i: {i} ---> Saldo Inicial: R$ {saldo_inicial} ---> Saldo Caixa Fluxo: R$ {dados_consolidados['saldo_caixa_fluxo'][i]} ---> Soma: {caixa_antes_reserva}")
 
             # -----------------------------
             # 10. FUNDO DE RESERVA (10% ou valor existente)

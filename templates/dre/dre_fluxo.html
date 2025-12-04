@@ -503,7 +503,8 @@
                             {% if valor > 0 %}
                                 R$ {{ "%.2f"|format(valor) }}
                             {% else %}
-                                -
+                                <!-- Verificar como fica aqui!!! -->
+                                - (R$ {{ "%.2f"|format(valor) }})
                             {% endif %}
                         </td>
                     {% endfor %}
@@ -537,7 +538,8 @@
                             {% if valor > 0 %}
                                 R$ {{ "%.2f"|format(valor) }}
                             {% else %}
-                                -
+                                <!-- Verificar como fica aqui!!! -->
+                                - (R$ {{ "%.2f"|format(valor) }})
                             {% endif %}
                         </td>
                     {% endfor %}
