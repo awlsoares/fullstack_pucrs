@@ -25,11 +25,13 @@ app.secret_key = 'chave_super_secreta'  # Necessário para usar flash e sessões
 # dialeto://usuario:senha@host:porta/nome_do_banco
 
 # MacBook
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://essencial_v2:essencial_v2@localhost:5432/essencial_v2'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://essencial_v3_mac:essencial_v3@localhost:5432/essencial_v3_mac'
 
 # Notebook Windows
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://essencial_v1:essencial_v1@localhost:5432/essencial_v1'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://essencial_v3_win:essencial_v3_win@localhost:5432/essencial_v3_win'
+
+
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
