@@ -4,6 +4,12 @@ from datetime import date, datetime
 from sqlalchemy import extract, asc
  
 propostas_bp = Blueprint('propostas', __name__)
+
+def br_to_float(valor_str: str) -> float:
+    if not valor_str:
+        return 0.0
+    return float(valor_str.replace('.', '').replace(',', '.'))
+
  
 @propostas_bp.route('/nova_proposta', methods=['GET', 'POST'])
 def nova_proposta():
@@ -34,9 +40,9 @@ def nova_proposta():
         else:
             contratos_multiplos = False
 
-        valor_assinatura = request.form['valor_assinatura']
-        valor_protocolo = request.form['valor_protocolo']
-        valor_conclusao = request.form['valor_conclusao']
+        valor_assinatura = br_to_float(request.form['valor_assinatura'])
+        valor_protocolo = br_to_float(request.form['valor_protocolo'])
+        valor_conclusao = br_to_float(request.form['valor_conclusao'])
         observacao = request.form['observacao']
         
         try:
@@ -46,9 +52,10 @@ def nova_proposta():
                 cliente_id=cliente_id,
                 contratos_multiplos = contratos_multiplos,
                 escopo=escopo,
-                valor_assinatura = float(valor_assinatura),
-                valor_protocolo=float(valor_protocolo),
-                valor_conclusao=float(valor_conclusao),
+                valor_assinatura = valor_assinatura,
+                valor_protocolo = valor_protocolo,
+                valor_conclusao = valor_conclusao,
+
                 observacao = observacao
             )
 
@@ -178,9 +185,11 @@ def editar_proposta(proposta_id):
             proposta.contratos_multiplos = True
         else:
             proposta.contratos_multiplos = False
-        proposta.valor_assinatura = request.form['valor_assinatura']
-        proposta.valor_protocolo = request.form['valor_protocolo']
-        proposta.valor_conclusao = request.form['valor_conclusao']
+
+        proposta.valor_assinatura = br_to_float(request.form['valor_assinatura'])
+        proposta.valor_protocolo = br_to_float(request.form['valor_protocolo'])
+        proposta.valor_conclusao = br_to_float(request.form['valor_conclusao'])
+
         proposta.observacao = request.form['observacao']
 
         try:
@@ -250,9 +259,10 @@ def nova_versao_proposta(id):
     print(f"Entrou em nova_versao_proposta({id}).")
     proposta = Proposta.query.get_or_404(id)
 
-    nova_assinatura = request.form['valor_assinatura']
-    novo_protocolo = request.form['valor_protocolo']
-    novo_conclusao = request.form['valor_conclusao']
+    nova_assinatura = br_to_float(request.form['valor_assinatura'])
+    novo_protocolo = br_to_float(request.form['valor_protocolo'])
+    novo_conclusao = br_to_float(request.form['valor_conclusao'])
+
     nova_data_envio = request.form['data_envio']
     novo_cliente_id = request.form['cliente_id']
     novo_escopo = request.form['escopo']
@@ -261,9 +271,9 @@ def nova_versao_proposta(id):
 
     try:
         proposta.criar_nova_versao(
-            nova_assinatura=float(nova_assinatura),
-            novo_protocolo=float(novo_protocolo),
-            novo_conclusao=float(novo_conclusao),
+            nova_assinatura=nova_assinatura,
+            novo_protocolo=novo_protocolo,
+            novo_conclusao=novo_conclusao,
             nova_data_envio=datetime.strptime(nova_data_envio, "%Y-%m-%d").date()
         )
 

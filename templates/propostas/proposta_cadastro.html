@@ -59,36 +59,104 @@
     </div>
 
     <div style="display: flex; gap: 20px;">
-      <div class="form-group">
-        {% if msg_assinatura == False %} 
-          <label for="valor_assinatura">Assinatura (R$): <span class="erro">*</span></label>
-          <input type="number" step="0.01" min="0.00" id="valor_assinatura" name="valor_assinatura" value="{{ proposta.valor_assinatura if proposta else '' }}" required>
-        {% else %}
-          <label for="valor_assinatura">Assinatura (R$): <span style="color: red; font-size: 11px;">*Faturado</span><span class="erro">*</span></label>
-          <input type="number" step="0.01" min="0.00" id="valor_assinatura" name="valor_assinatura" value="{{ proposta.valor_assinatura if proposta else '' }}" readonly>
-        {% endif %} 
-      </div>
 
-      <div class="form-group">
-        {% if msg_protocolo == False %} 
-          <label for="valor_protocolo">Protocolo (R$): <span class="erro">*</span></label>
-          <input type="number" step="0.01" min="0.00" id="valor_protocolo" name="valor_protocolo" value="{{ proposta.valor_protocolo if proposta else '' }}"required>
-        {% else %}
-          <label for="valor_protocolo">Protocolo (R$): <span style="color: red; font-size: 11px;">*Faturado</span><span class="erro">*</span></label>
-          <input type="number" step="0.01" min="0.00" id="valor_protocolo" name="valor_protocolo" value="{{ proposta.valor_protocolo if proposta else '' }}"readonly>
-        {% endif %} 
-      </div>
+    <!-- ====================== ASSINATURA ====================== -->
+    <div class="form-group">
+      {% set valor_assinatura_br = ("{:,.2f}".format(proposta.valor_assinatura)
+          .replace(",", "X")
+          .replace(".", ",")
+          .replace("X", ".")) if proposta else "" %}
 
-      <div class="form-group">
-        {% if msg_conclusao == False %}
-          <label for="valor_conclusao">Conclusão (R$): <span class="erro">*</span></label>
-          <input type="number" step="0.01" min="0.00" id="valor_conclusao" name="valor_conclusao" value="{{ proposta.valor_conclusao if proposta else '' }}"required>
-        {% else %}
-          <label for="valor_conclusao">Conclusão (R$): <span style="color: red; font-size: 11px;">*Faturado</span><span class="erro">*</span></label>
-          <input type="number" step="0.01" min="0.00" id="valor_conclusao" name="valor_conclusao" value="{{ proposta.valor_conclusao if proposta else '' }}"readonly>
-        {% endif %}
-      </div>
+      {% if msg_assinatura == False %}
+        <label for="valor_assinatura" style="text-align: center;">
+          Assinatura (R$): <span class="erro">*</span>
+        </label>
+        <input type="text"
+              id="valor_assinatura"
+              name="valor_assinatura"
+              value="{{ valor_assinatura_br }}"
+              style="text-align: center;"
+              required>
+      {% else %}
+        <label for="valor_assinatura">
+          Assinatura (R$): 
+          <span style="color: red; font-size: 11px;">*Faturado</span>
+          <span class="erro">*</span>
+        </label>
+        <input type="text"
+              id="valor_assinatura"
+              name="valor_assinatura"
+              value="{{ valor_assinatura_br }}"
+              style="text-align: center;"
+              readonly>
+      {% endif %}
     </div>
+
+    <!-- ====================== PROTOCOLO ====================== -->
+    <div class="form-group">
+      {% set valor_protocolo_br = ("{:,.2f}".format(proposta.valor_protocolo)
+          .replace(",", "X")
+          .replace(".", ",")
+          .replace("X", ".")) if proposta else "" %}
+
+      {% if msg_protocolo == False %}
+        <label for="valor_protocolo" style="text-align: center;">
+          Protocolo (R$): <span class="erro">*</span>
+        </label>
+        <input type="text"
+              id="valor_protocolo"
+              name="valor_protocolo"
+              value="{{ valor_protocolo_br }}"
+              style="text-align: center;"
+              required>
+      {% else %}
+        <label for="valor_protocolo">
+          Protocolo (R$): 
+          <span style="color: red; font-size: 11px;">*Faturado</span>
+          <span class="erro">*</span>
+        </label>
+        <input type="text"
+              id="valor_protocolo"
+              name="valor_protocolo"
+              value="{{ valor_protocolo_br }}"
+              style="text-align: center;"
+              readonly>
+      {% endif %}
+    </div>
+
+    <!-- ====================== CONCLUSÃO ====================== -->
+    <div class="form-group">
+      {% set valor_conclusao_br = ("{:,.2f}".format(proposta.valor_conclusao)
+          .replace(",", "X")
+          .replace(".", ",")
+          .replace("X", ".")) if proposta else "" %}
+
+      {% if msg_conclusao == False %}
+        <label for="valor_conclusao" style="text-align: center;">
+          Conclusão (R$): <span class="erro">*</span>
+        </label>
+        <input type="text"
+              id="valor_conclusao"
+              name="valor_conclusao"
+              value="{{ valor_conclusao_br }}"
+              style="text-align: center;"
+              required>
+      {% else %}
+        <label for="valor_conclusao">
+          Conclusão (R$): 
+          <span style="color: red; font-size: 11px;">*Faturado</span>
+          <span class="erro">*</span>
+        </label>
+        <input type="text"
+              id="valor_conclusao"
+              name="valor_conclusao"
+              value="{{ valor_conclusao_br }}"
+              style="text-align: center;"
+              readonly>
+      {% endif %}
+    </div>
+
+  </div>
 
     <div class="form-group">
       <label for="observacao">Observação: <span class="erro">*</span></label>
@@ -220,10 +288,49 @@
 </style>
 
 <script>
+
+  // ===============================
+  // MÁSCARA BRASILEIRA DE MOEDA
+  // ===============================
+  function aplicarMascara(valor) {
+    valor = valor.replace(/\D/g, ""); // remove tudo que não é número
+    if (valor === "") return "";
+
+    // transforma em centavos
+    valor = (parseInt(valor, 10) / 100).toFixed(2) + "";
+    valor = valor.replace(".", ","); // decimal BR
+
+    // adiciona pontos de milhar
+    let partes = valor.split(",");
+    partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return partes.join(",");
+  }
+
+  function normalizarParaFloat(valorBR) {
+    if (!valorBR) return "";
+    return valorBR.replace(/\./g, "").replace(",", ".");
+  }
+
+  // aplica máscara enquanto digita
+  function ativarMascara(id) {
+    const campo = document.getElementById(id);
+    campo.addEventListener("input", function () {
+      this.value = aplicarMascara(this.value);
+    });
+  }
+
+  ativarMascara("valor_assinatura");
+  ativarMascara("valor_protocolo");
+  ativarMascara("valor_conclusao");
+
+
+
+  // ===============================
+  // VALIDAÇÃO DO FORMULÁRIO
+  // ===============================
   function validarFormulario() {
     let valido = true;
 
-    // Campos obrigatórios
     const camposObrigatorios = [
       'numero_proposta',
       'data_envio',
@@ -247,7 +354,11 @@
       }
     });
 
-    // Validação específica de números decimais não negativos
+    // ===============================
+    // REGEX BR: 1.234,56
+    // ===============================
+    const regexBR = /^\d{1,3}(\.\d{3})*,\d{2}$/;
+
     const camposNumericos = [
       'valor_assinatura',
       'valor_protocolo',
@@ -256,98 +367,127 @@
 
     camposNumericos.forEach(function(campoId) {
       const campo = document.getElementById(campoId);
-      const valor = parseFloat(campo.value);
+      const label = campo.previousElementSibling.querySelector('.erro');
 
-      const regexDecimal = /^\d+(\.\d{1,2})?$/;
-
-      if (isNaN(valor) || valor < 0 || !regexDecimal.test(campo.value)) {
+      if (!regexBR.test(campo.value)) {
         campo.value = '';
-        const label = campo.previousElementSibling.querySelector('.erro');
         if (label) label.style.display = 'inline';
         valido = false;
       }
     });
 
+    // ===============================
+    // CONVERTE PARA FORMATO AMERICANO ANTES DO SUBMIT
+    // ===============================
+    if (valido) {
+      camposNumericos.forEach(function(campoId) {
+        const campo = document.getElementById(campoId);
+        campo.value = normalizarParaFloat(campo.value);
+      });
+    }
+
     return valido;
   }
 
+
+
+  // ======================================================================================
+  // BLOCO DE EDIÇÃO DA PROPOSTA — TOTALMENTE INTEGRADO COM A VALIDAÇÃO E MÁSCARA NOVA
+  // ======================================================================================
   {% if proposta %}
-    // === Script de edição de proposta ===
-    document.addEventListener("DOMContentLoaded", function() {
-      const versao = {{ proposta.versao }};
-      const numeroDaProposta = document.getElementById('numero_da_proposta').innerText;
-      const campoData = document.getElementById('data_registro');
-      const dataOriginal = document.getElementById('data_envio_original').value;
+  document.addEventListener("DOMContentLoaded", function() {
 
-      function formatarData(dateStr) {
-        if (!dateStr) return '';
-        const partes = dateStr.split('-'); // yyyy-mm-dd
-        return `${partes[2]}/${partes[1]}/${partes[0]}`; // dd/mm/yyyy
-      }
+    // ----------------------------
+    // CHECAGEM DE MUDANÇA DE ANO
+    // ----------------------------
+    const versao = {{ proposta.versao }};
+    const numeroDaProposta = document.getElementById('numero_da_proposta').innerText;
+    const campoData = document.getElementById('data_registro');
+    const dataOriginal = document.getElementById('data_envio_original').value;
 
+    function formatarData(dateStr) {
+      if (!dateStr) return '';
+      const partes = dateStr.split('-');
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
 
-      if (versao === 0 && dataOriginal) {
-        const anoOriginal = parseInt(dataOriginal.split('-')[0], 10);
+    if (versao === 0 && dataOriginal) {
+      const anoOriginal = parseInt(dataOriginal.split('-')[0], 10);
 
-        function checarAno() {
-          const dataNova = campoData.value;
-          if (!dataNova) return;
-          const anoNovo = parseInt(dataNova.split('-')[0], 10);
-          if (anoNovo !== anoOriginal) {
-            alert(`⚠️ Você está alterarando o ANO (${anoOriginal}) do envio de uma Proposta Versão Zero!
-                  \nFique ciente de que o Número da Proposta não sofrerá alteração!
-                  \nNúmero da Proposta: ${numeroDaProposta}.
-                  \nNova Data de Envio da Proposta: ${formatarData(dataNova)}.`);
-                  //campoData.value = dataOriginal;
-          }
+      function checarAno() {
+        const dataNova = campoData.value;
+        if (!dataNova) return;
+        const anoNovo = parseInt(dataNova.split('-')[0], 10);
+        if (anoNovo !== anoOriginal) {
+          alert(
+            "Você está alterando o ANO (" + anoOriginal + ") do envio de uma Proposta Versão Zero!\n\n" +
+            "O Número da Proposta não sofrerá alteração.\n" +
+            "Número da Proposta: " + numeroDaProposta + "\n" +
+            "Nova Data de Envio: " + formatarData(dataNova)
+          );
         }
-
-        checarAno();
-        campoData.addEventListener('change', checarAno);
       }
 
-      const form = document.getElementById('form-cadastro-projeto');
-      const modal = document.getElementById('modalVersao');
-      const btnNova = document.getElementById('btnNovaVersao');
-      const btnAtual = document.getElementById('btnEditarAtual');
-      const btnCancelar = document.getElementById('btnCancelarAlteracao');
+      checarAno();
+      campoData.addEventListener('change', checarAno);
+    }
 
-      let acaoUsuario = null; 
 
-      form.addEventListener('submit', function(event) {
-        const alterouCritico =
-          document.getElementById('data_registro').value !== document.getElementById('data_envio_original').value ||
-          document.getElementById('valor_assinatura').value !== document.getElementById('valor_assinatura_original').value ||
-          document.getElementById('valor_protocolo').value !== document.getElementById('valor_protocolo_original').value ||
-          document.getElementById('valor_conclusao').value !== document.getElementById('valor_conclusao_original').value;
 
-        if (alterouCritico && acaoUsuario === null) {
-          event.preventDefault();
-          modal.style.display = 'block';
-        } 
-      });
+    // ----------------------------
+    // CONTROLE DO MODAL DE VERSÃO
+    // ----------------------------
+    const form = document.getElementById('form-cadastro-projeto');
+    const modal = document.getElementById('modalVersao');
+    const btnNova = document.getElementById('btnNovaVersao');
+    const btnAtual = document.getElementById('btnEditarAtual');
+    const btnCancelar = document.getElementById('btnCancelarAlteracao');
 
-      btnNova.addEventListener('click', function() {
-        acaoUsuario = 'nova';
-        modal.style.display = 'none';
-        form.action = "{{ url_for('propostas.nova_versao_proposta', id=proposta.id) }}";
-        form.submit();
-      });
+    let acaoUsuario = null;
 
-      btnAtual.addEventListener('click', function() {
-        acaoUsuario = 'editar';
-        modal.style.display = 'none';
-        form.action = "{{ url_for('propostas.editar_proposta', proposta_id=proposta.id) }}";
-        form.submit();
-      });
+    form.addEventListener('submit', function(event) {
+      // aplica validação BR antes de verificar diferenças
+      if (!validarFormulario()) {
+        event.preventDefault();
+        return;
+      }
 
-      btnCancelar.addEventListener('click', function() {
-        modal.style.display = 'none';
-        window.location.href = "{{ url_for('propostas.listar_propostas') }}";
-      });
+      const alterouCritico =
+        document.getElementById('data_registro').value !== document.getElementById('data_envio_original').value ||
+        document.getElementById('valor_assinatura').value !== document.getElementById('valor_assinatura_original').value ||
+        document.getElementById('valor_protocolo').value !== document.getElementById('valor_protocolo_original').value ||
+        document.getElementById('valor_conclusao').value !== document.getElementById('valor_conclusao_original').value;
+
+      if (alterouCritico && acaoUsuario === null) {
+        event.preventDefault();
+        modal.style.display = 'block';
+      }
     });
+
+    btnNova.addEventListener('click', function() {
+      acaoUsuario = 'nova';
+      modal.style.display = 'none';
+      form.action = "{{ url_for('propostas.nova_versao_proposta', id=proposta.id) }}";
+      form.submit();
+    });
+
+    btnAtual.addEventListener('click', function() {
+      acaoUsuario = 'editar';
+      modal.style.display = 'none';
+      form.action = "{{ url_for('propostas.editar_proposta', proposta_id=proposta.id) }}";
+      form.submit();
+    });
+
+    btnCancelar.addEventListener('click', function() {
+      modal.style.display = 'none';
+      window.location.href = "{{ url_for('propostas.listar_propostas') }}";
+    });
+
+  });
   {% endif %}
+
 </script>
+
 
 
 {% endblock %}

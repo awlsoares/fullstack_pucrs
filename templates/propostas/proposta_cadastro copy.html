@@ -1,0 +1,353 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  {{ 'Editar Proposta' if proposta else 'Cadastrar Proposta' }}{% endblock %}
+{% block content %}
+
+<div id="conteudo-projetos">
+  <h2>{{ '✍ Editar Proposta' | safe  if proposta else '&#10133; Adicionar Proposta' | safe }}</h2>
+  <hr>
+ 
+  <form method="post" id="form-cadastro-projeto" onsubmit="return validarFormulario();">
+    <input type="hidden" id="valor_assinatura_original" value="{{ proposta.valor_assinatura if proposta else '' }}">
+    <input type="hidden" id="valor_protocolo_original" value="{{ proposta.valor_protocolo if proposta else '' }}">
+    <input type="hidden" id="valor_conclusao_original" value="{{ proposta.valor_conclusao if proposta else ''}}">
+    <input type="hidden" id="data_envio_original" value="{{ proposta.data_envio if proposta else '' }}">
+
+    <div style="display: flex; gap: 20px;">
+      <div class="form-group">
+        <label for="data_registro">Data do Envio: <span class="erro">*</span></label>
+        <input type="date" id="data_registro" name="data_envio" value="{{ proposta.data_envio if proposta else '' }}" required>
+      </div>
+      
+      {% if proposta %}
+        <div class="form-group">
+          <label for="numero_projeto" style="text-align: center;">Número da Proposta:<span class="erro">*</span></label>
+          <label style="text-align: center;" id="numero_da_proposta">{{ proposta.numero_proposta }} - V_{{ proposta.versao }}</label>
+        </div>
+      {% endif %}
+      
+      <!-- <div class="form-group"> -->
+        <label for="contratos_multiplos" title="Marque se for gerar contratos mensais.">
+          <input type="checkbox" id="contratos_multiplos" name="contratos_multiplos" {% if proposta and proposta.contratos_multiplos %}checked{% endif %}>
+          Múltiplos contratos
+        </label>
+      <!-- </div> -->
+
+    </div>
+
+    <div class="form-group">
+      <label for="cliente_id">Cliente: <span class="erro">*</span></label>
+      <select id="cliente_id" name="cliente_id" {% if proposta and proposta.versao != 0 %} disabled {% else %} required {% endif %}>
+          <option value="">Selecione</option> 
+          {% for cliente in clientes %}
+              <option value="{{ cliente.id }}" {% if proposta and cliente.id == cliente_da_proposta %} selected {% endif %}>
+                  {{ cliente.nome }}
+              </option>
+          {% endfor %}
+      </select>
+
+      {% if proposta and proposta.versao != 0 %}
+        <input type="hidden" name="cliente_id" value="{{ cliente_da_proposta }}">
+      {% endif %}
+
+    </div>
+
+    <div class="form-group">
+      <label for="escopo">Escopo: <span class="erro">*</span></label>
+      <input type="text" id="escopo" name="escopo" value="{{ proposta.escopo if proposta else '' }}"required>
+    </div>
+
+    <div style="display: flex; gap: 20px;">
+      <div class="form-group">
+        {% if msg_assinatura == False %} 
+          <label for="valor_assinatura">Assinatura (R$): <span class="erro">*</span></label>
+          <input type="number" step="0.01" min="0.00" id="valor_assinatura" name="valor_assinatura" value="{{ proposta.valor_assinatura if proposta else '' }}" required>
+        {% else %}
+          <label for="valor_assinatura">Assinatura (R$): <span style="color: red; font-size: 11px;">*Faturado</span><span class="erro">*</span></label>
+          <input type="number" step="0.01" min="0.00" id="valor_assinatura" name="valor_assinatura" value="{{ proposta.valor_assinatura if proposta else '' }}" readonly>
+        {% endif %} 
+      </div>
+
+      <div class="form-group">
+        {% if msg_protocolo == False %} 
+          <label for="valor_protocolo">Protocolo (R$): <span class="erro">*</span></label>
+          <input type="number" step="0.01" min="0.00" id="valor_protocolo" name="valor_protocolo" value="{{ proposta.valor_protocolo if proposta else '' }}"required>
+        {% else %}
+          <label for="valor_protocolo">Protocolo (R$): <span style="color: red; font-size: 11px;">*Faturado</span><span class="erro">*</span></label>
+          <input type="number" step="0.01" min="0.00" id="valor_protocolo" name="valor_protocolo" value="{{ proposta.valor_protocolo if proposta else '' }}"readonly>
+        {% endif %} 
+      </div>
+
+      <div class="form-group">
+        {% if msg_conclusao == False %}
+          <label for="valor_conclusao">Conclusão (R$): <span class="erro">*</span></label>
+          <input type="number" step="0.01" min="0.00" id="valor_conclusao" name="valor_conclusao" value="{{ proposta.valor_conclusao if proposta else '' }}"required>
+        {% else %}
+          <label for="valor_conclusao">Conclusão (R$): <span style="color: red; font-size: 11px;">*Faturado</span><span class="erro">*</span></label>
+          <input type="number" step="0.01" min="0.00" id="valor_conclusao" name="valor_conclusao" value="{{ proposta.valor_conclusao if proposta else '' }}"readonly>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="observacao">Observação: <span class="erro">*</span></label>
+      <input type="text" id="observacao" name="observacao" value="{{ proposta.observacao if proposta else '' }}">
+    </div>
+
+    <div class="form-group botoes">
+      <input type="submit" value="Salvar" class="btn-salvar"> 
+      <a href="{{ url_for('propostas.listar_propostas') }}" class="btn-cancelar">Cancelar</a>
+    </div>
+
+    {% if proposta and proposta.versao != 0 %}
+      <div class="form-group">
+        <label for="historico">Histórico: <span class="erro">*</span></label>
+        <textarea id="historico" name="historico" rows="5" cols="80" readonly>
+          "{{ proposta.historico if proposta else '' }}">
+        </textarea>
+    </div>
+    {% endif %}
+
+  </form>
+
+  <div id="modalVersao" class="modal" style="display:none; position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);">
+    <div style="background:#fff;margin:10% auto;padding:20px;width:300px;border-radius:8px;text-align:center;">
+      <p>Foram detectadas alterações em dados críticos. Deseja criar uma nova versão da proposta?</p>
+      <button type="button" id="btnNovaVersao">Criar Nova Versão</button>
+      <button type="button" id="btnEditarAtual">Editar Versão Atual</button>
+      <button type="button" id="btnCancelarAlteracao">Cancelar Alteração</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Estilo geral */
+  #conteudo-projetos {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+
+  /* Estilo dos campos do formulário */
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  .erro {
+    color: red;
+    font-size: 12px;
+    display: none;
+    margin-left: 4px;
+  }
+
+  /* Botões */
+.botoes {
+    display: flex; /* Alinha os botões lado a lado */
+    justify-content: center; /* Centraliza os botões horizontalmente */
+    gap: 15px; /* Espaço entre os botões */
+    margin-top: 20px;
+  }
+
+  .btn-salvar {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-salvar:hover {
+    background-color: #0056b3;
+  }
+
+  .btn-cancelar {
+    background-color: #6c757d;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+    text-decoration: none;
+  }
+
+  .btn-cancelar:hover {
+    background-color: #5a6268;
+  }
+</style>
+
+<script>
+  function validarFormulario() {
+    let valido = true;
+
+    // Campos obrigatórios
+    const camposObrigatorios = [
+      'numero_proposta',
+      'data_envio',
+      'cliente_id',
+      'escopo',
+      'valor_assinatura',
+      'valor_protocolo',
+      'valor_conclusao'
+    ];
+
+    camposObrigatorios.forEach(function(campoId) {
+      const campo = document.getElementById(campoId);
+      const label = campo.previousElementSibling.querySelector('.erro');
+
+      if (!campo.value.trim()) {
+        campo.value = '';
+        if (label) label.style.display = 'inline';
+        valido = false;
+      } else {
+        if (label) label.style.display = 'none';
+      }
+    });
+
+    // Validação específica de números decimais não negativos
+    const camposNumericos = [
+      'valor_assinatura',
+      'valor_protocolo',
+      'valor_conclusao'
+    ];
+
+    camposNumericos.forEach(function(campoId) {
+      const campo = document.getElementById(campoId);
+      const valor = parseFloat(campo.value);
+
+      const regexDecimal = /^\d+(\.\d{1,2})?$/;
+
+      if (isNaN(valor) || valor < 0 || !regexDecimal.test(campo.value)) {
+        campo.value = '';
+        const label = campo.previousElementSibling.querySelector('.erro');
+        if (label) label.style.display = 'inline';
+        valido = false;
+      }
+    });
+
+    return valido;
+  }
+
+  {% if proposta %}
+    // === Script de edição de proposta ===
+    document.addEventListener("DOMContentLoaded", function() {
+      const versao = {{ proposta.versao }};
+      const numeroDaProposta = document.getElementById('numero_da_proposta').innerText;
+      const campoData = document.getElementById('data_registro');
+      const dataOriginal = document.getElementById('data_envio_original').value;
+
+      function formatarData(dateStr) {
+        if (!dateStr) return '';
+        const partes = dateStr.split('-'); // yyyy-mm-dd
+        return `${partes[2]}/${partes[1]}/${partes[0]}`; // dd/mm/yyyy
+      }
+
+
+      if (versao === 0 && dataOriginal) {
+        const anoOriginal = parseInt(dataOriginal.split('-')[0], 10);
+
+        function checarAno() {
+          const dataNova = campoData.value;
+          if (!dataNova) return;
+          const anoNovo = parseInt(dataNova.split('-')[0], 10);
+          if (anoNovo !== anoOriginal) {
+            alert(`⚠️ Você está alterarando o ANO (${anoOriginal}) do envio de uma Proposta Versão Zero!
+                  \nFique ciente de que o Número da Proposta não sofrerá alteração!
+                  \nNúmero da Proposta: ${numeroDaProposta}.
+                  \nNova Data de Envio da Proposta: ${formatarData(dataNova)}.`);
+                  //campoData.value = dataOriginal;
+          }
+        }
+
+        checarAno();
+        campoData.addEventListener('change', checarAno);
+      }
+
+      const form = document.getElementById('form-cadastro-projeto');
+      const modal = document.getElementById('modalVersao');
+      const btnNova = document.getElementById('btnNovaVersao');
+      const btnAtual = document.getElementById('btnEditarAtual');
+      const btnCancelar = document.getElementById('btnCancelarAlteracao');
+
+      let acaoUsuario = null; 
+
+      form.addEventListener('submit', function(event) {
+        const alterouCritico =
+          document.getElementById('data_registro').value !== document.getElementById('data_envio_original').value ||
+          document.getElementById('valor_assinatura').value !== document.getElementById('valor_assinatura_original').value ||
+          document.getElementById('valor_protocolo').value !== document.getElementById('valor_protocolo_original').value ||
+          document.getElementById('valor_conclusao').value !== document.getElementById('valor_conclusao_original').value;
+
+        if (alterouCritico && acaoUsuario === null) {
+          event.preventDefault();
+          modal.style.display = 'block';
+        } 
+      });
+
+      btnNova.addEventListener('click', function() {
+        acaoUsuario = 'nova';
+        modal.style.display = 'none';
+        form.action = "{{ url_for('propostas.nova_versao_proposta', id=proposta.id) }}";
+        form.submit();
+      });
+
+      btnAtual.addEventListener('click', function() {
+        acaoUsuario = 'editar';
+        modal.style.display = 'none';
+        form.action = "{{ url_for('propostas.editar_proposta', proposta_id=proposta.id) }}";
+        form.submit();
+      });
+
+      btnCancelar.addEventListener('click', function() {
+        modal.style.display = 'none';
+        window.location.href = "{{ url_for('propostas.listar_propostas') }}";
+      });
+    });
+  {% endif %}
+</script>
+
+
+{% endblock %}
