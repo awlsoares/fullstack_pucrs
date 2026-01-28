@@ -50,10 +50,10 @@
         <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(1, this)">Envio<span></span></th>
         <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(2, this)">Cliente <span></span></th>
         <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(3, this)">Escopo <span></span></th>        
-        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(4, this)">Assinatura (R$) <span></span></th>
-        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(5, this)">Protocolo (R$) <span></span></th>
-        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(6, this)">Conclusão (R$) <span></span></th>
-        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(7, this)">Total (R$) <span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(4, this)">Assinatura<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(5, this)">Protocolo<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(6, this)">Conclusão<span></span></th>
+        <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(7, this)">Total<span></span></th>
         <th style="cursor: pointer; text-align: center;" title="Permite múltiplos contratos? S/N" onclick="ordenarTabelaProposta(8, this)">M<span></span></th>
         <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(9, this)">Proposta<span></span></th>
         <th style="cursor: pointer; text-align: center;" onclick="ordenarTabelaProposta(10, this)">Contrato<span></span></th>
@@ -85,10 +85,47 @@
             <td style="text-align: center;" data-label="Envio">{{ proposta.data_envio.strftime("%d/%m/%y") }}</td>
             <td style="text-align: center;" data-label="Cliente">{{ proposta.cliente.nome }}</td>
             <td data-label="Descrição" class="Escopo">{{ proposta.escopo }}</td>
-            <td style="text-align: center;" data-label="Assinatura (R$)">{{ "%.2f"|format(proposta.valor_assinatura) }}</td>
+            <!-- <td style="text-align: center;" data-label="Assinatura (R$)">{{ "%.2f"|format(proposta.valor_assinatura) }}</td>
             <td style="text-align: center;" data-label="Protocolo (R$)">{{ "%.2f"|format(proposta.valor_protocolo) }}</td>          
-            <td style="text-align: center;" data-label="Aprovação (R$)">{{ "%.2f"|format(proposta.valor_conclusao) }}</td>
-            <td style="text-align: center;" data-label="Total (R$)">{{ "%.2f"|format(proposta.valor_assinatura + proposta.valor_protocolo + proposta.valor_conclusao) }}</td>
+            <td style="text-align: center;" data-label="Aprovação (R$)">{{ "%.2f"|format(proposta.valor_conclusao) }}</td> -->
+            <td style="text-align: center;" data-label="Assinatura (R$)">
+                {{ "{:,.2f}".format(proposta.valor_assinatura)
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", ".")
+                }}
+            </td>
+
+            <td style="text-align: center;" data-label="Protocolo (R$)">
+                {{ "{:,.2f}".format(proposta.valor_protocolo)
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", ".")
+                }}
+            </td>
+
+            <td style="text-align: center;" data-label="Aprovação (R$)">
+                {{ "{:,.2f}".format(proposta.valor_conclusao)
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", ".")
+                }}
+            </td>
+
+            <!-- <td style="text-align: center;" data-label="Total (R$)">{{ "%.2f"|format(proposta.valor_assinatura + proposta.valor_protocolo + proposta.valor_conclusao) }}</td> -->
+            
+            <td style="text-align: center;" data-label="Total (R$)">
+                {{ "{:,.2f}".format(
+                        proposta.valor_assinatura +
+                        proposta.valor_protocolo +
+                        proposta.valor_conclusao
+                    )
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", ".")
+                }}
+            </td>
+
             <td style="text-align: center;" data-label="Múltiplas Propostas"
               title= {% if proposta.contratos_multiplos %}"Permite contratos múltiplos"{% else %}
                 "Permite apenas 1 contrato."{% endif %}>

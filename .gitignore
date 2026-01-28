@@ -43,3 +43,13 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Arquivos excel
+*.xlsx
+
+# Pasta Auxiliar e importar
+Auxiliar/
+importar/
+
+# Arquivo de backup
+backup_2
